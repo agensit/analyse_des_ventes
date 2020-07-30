@@ -18,7 +18,7 @@ import dash_table
 # dash & plotly
 import plotly.io as pio
 pio.templates.default = "plotly_white"
-config_dash = {'displayModeBar': False, 'showAxisDragHandles':False}  # ,  
+config_dash = {'displayModeBar': False, 'showAxisDragHandles':False}
 margin = dict(l=0, r=0, t=0, b=0)
 # get acess to mapbox
 with open('mapbox_token.txt') as f:
@@ -128,38 +128,50 @@ app.layout = dbc.Container([
 			sous l'angle de l'analyse de vos données. Notre objectif est de vous démontrer que l'extraction de connaissances 
 			à partir de vos données facilite les prises de décisions et constitue un avantage stratégique.''',
 			color="primary"),
+	# Introduction et présentation des données
 		dcc.Markdown('''
-			__Les données utilisées représente les ventes réalisé par une entreprise d'électronique lors de l’année 2019__. 
-			Un exemple du jeux de données est visible a travers le tableau-ci dessous.
+			## Introduction et présentation des données
+			---
+			Les données utilisées représente les ventes réalisées par une entreprise d'électronique lors de l’année 2019. 
+			Attention l'entreprise n'existe pas, il s'agit de données fictives. Ci-dessous vous pouvez vous familiraser avec le jeu de données 
+			que nous allons utiliser durant toute notre analyse.
 		'''),
 		dbc.Table.from_dataframe(dirty_data[:4], striped=True, bordered=True, hover=True, responsive=True),
+		dbc.Alert('''
+			Echantilon des donnees que nous allons utiliser durant notre analyse. On y retrouve des informations pertinentes sur nos clients, 
+			tel que les produits achetés, l'heure d'achat où encore l’adresse de livraison.''', color='light'
+		),
 		dcc.Markdown('''
-			_legende_
-
-			On y retrouve des informations pertinentes sur nos clients, tel que les `produits achetés`, 
-			`l'heure d'achat` où encore `l’adresse de livraison`.
-
-			➜ Le client répertorié par l'id __295665__ a acheté un __Macbook Pro__ à __1700$__ le __30 décembre 2019 à 00:01__, 
-			son adress de livraison est __136 Church St, New York City, NY 10001__ 
-
-			#### Descriptif des données collectées
-			- __ID__, numéro unique par client 
-			- __Produit__, nom du matériel informatique acheté 
-			- __Quantité commandée__, nombre d’exemplaires vendu
-			- __Prix__, prix unnitaire de chaque produit
-			- __Date__, date et heure de l'achat
-			- __Adresse__, adresse de livraison
-			- __Catégorie__, nature du produit (Computers, Washing Machine, Gears, TV & Monitor, Phone)
+			Pour chaque commande un ensemble d'informations est collecté sur le client. Par example, le client répertorié par l'id 
+			__295665__ a acheté un __Macbook Pro__ à __1700$__ le __30 décembre 2019 à 00:01__, son adresse de livraison est le __136 Church St
+			, New York City, NY 10001__. Veuillez vous referer à la liste ci-dessous pour comprendre l'ensemble des informations collectés lors d'une commande.
 		'''),
+		dbc.Alert([
+			html.H5("Descriptif des informations recoltes lors d'une commandes"),
+			html.Hr(),
+			dcc.Markdown('''
+				- __ID__, numéro unique par client 
+				- __Produit__, nom du matériel informatique acheté 
+				- __Quantité commandée__, nombre d’exemplaires vendu
+				- __Prix__, prix unnitaire de chaque produit
+				- __Date__, date et heure de l'achat
+				- __Adresse__, adresse de livraison
+				- __Catégorie__, nature du produit (Computers, Washing Machine, Gears, TV & Monitor, Phone)
+			''')
+		], color='secondary'),
 		dcc.Markdown('''
-			## Sommaire
-			---
-			1. [Présentation des produits ](#cleanning)
-			2. [Présentation des lieux de ventes](#augment)
-			3. [Etude temporelle](#okay)
+			Maintenant que nous nous sommes familiariser avec nos données, nous pouvons les analyser pour en extraire des informations pertinentes. 
+			La suite de ce rapport est divisé en trois parties:
 
-			## 1. Présentation des produits 
+			1. __Présentation des produits__, apres avoir découvert la gamme de produit vendu, nous déterminerons quel est le produit qui se 
+			vend le mieux et qu'elle est la meilleur période de vente.
+			2. __Présentation des lieux de ventes__, aprés une rapide présentation des lieux de ventes, nous verrons qu'elle est la ville la plus prolifique
+			3. __Analyse approfondie__, ici nous en apprendrons d'avantage en determinant par example le meilleur moment pour afficher de la publicité, ou 
+			encore nous tirerons des conclusion sur le nombre de produit achétes par commandes
 		'''),
+	# Présentation des produits
+		html.H2('1. Présentation des produits') ,
+		html.Hr(),
 		dcc.Markdown('''
 			Notre entreprise d’électronique vend __19 produits__ différents regroupés en __5 catégories__. On constate par exemple que 
 			seulement deux type d’ordinateur sont vendus, le macbook pro et le ThinkPad Laptop. Explorer par vous même la gamme des produits 
