@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 import plotly.express as px
+from plotly.subplots import make_subplots
 
 import dash
 import dash_bootstrap_components as dbc
@@ -50,23 +51,23 @@ dirty_data = pd.read_csv('all_data.csv')
 data = pd.read_csv('clean_data.csv')
 
 cities = data['City'].unique()
-products = data['Product'].unique()
-categories = data['Categories'].unique()
 product_report = data.groupby(['Categories', 'Product']).sum()
+product_list = product_report.index.get_level_values('Product')
+categories_list =product_report.index.get_level_values('Categories')
 
 
 ## PARCAST  : découverte des produits
 df = product_report.reset_index().sort_values('Categories')
 cat_dim = go.parcats.Dimension(values=df['Categories'].values)
-product_dim = go.parcats.Dimension(values=products)
+product_dim = go.parcats.Dimension(values=product_list)
 colors = df['Categories'].apply(lambda x:str_to_int[x])
 colorscale = [value for value in colors_palette.values()]
-Parcats = go.Figure(go.Parcats(
+parcats = go.Figure(go.Parcats(
     dimensions=[cat_dim, product_dim],
     line={'color':colors, 'colorscale':colorscale, 'shape':'hspline'},
     tickfont = dict(size = 12),
     hoverinfo='none'))
-Parcats.update_layout(margin=dict(l=75, r=150, t=0, b=0))
+parcats.update_layout(margin=dict(l=75, r=150, t=0, b=0))
 
 ## BAR CHART : Quel produit fait le meilleur chiffre de vente
 product_rank = product_report['Sales'].sort_values().reset_index('Categories')
@@ -87,6 +88,7 @@ for product in product_rank.index:
     	x = [product_rank.loc[product,'Sales']],
     	marker_color = colors_palette[cat],
 	    orientation='h',
+	    hovertemplate="%{x:.3s} $<extra></extra>",
 	    legendgroup=cat,
 	    showlegend=legend_status,
 	    name=cat))
@@ -103,6 +105,36 @@ product_bar.update_layout(
 		xanchor="right", x=0.93))
 product_bar.update_yaxes(showgrid=False, linecolor='black', linewidth=1.5)
 product_bar.update_xaxes(nticks=5)
+
+## DOUBLE DONUTS: Comparaison du nombre de ventes et du volume de ventes
+labels = categories_list
+colors  = product_report.reset_index(0)['Categories'].apply(lambda x: colors_palette[x])
+# create subplots
+double_donuts = make_subplots(rows=1, cols=2, specs=[[{'type':'domain'}, {'type':'domain'}]])
+double_donuts.add_trace(go.Pie(labels=labels, values=product_report['Sales'], 
+                     hovertemplate="<b>%{label}</b><br>"+
+                     "%{percent} du Chiffre d'Affaires<br>"+
+                     "↳ %{value:.2s} $ <extra></extra>",
+                     title = dict(
+                         text=f"<b>Chiffre d'Affaires</b><br>{millify(product_report['Sales'].sum())} $",
+                         font=dict(size=15)),
+                     marker_colors= colors),
+              1, 1)
+double_donuts.add_trace(go.Pie(labels=labels, values=product_report['Quantity Ordered'], marker_colors= colors,
+                     hovertemplate="<b>%{label}</b><br>"+
+                     "%{percent} des ventes<br>"+
+                     "↳ %{value:.2s} de ventes <extra></extra>",
+                     title = dict(
+                         text=f"<b>Nombre de ventes</b><br>↳{millify(product_report['Quantity Ordered'].sum())}",
+                         font=dict(size=15)),
+                    ),
+              1, 2)
+# update
+double_donuts.update_traces(hole=.4,textinfo='label', textposition='inside')
+double_donuts.update_layout(
+    margin = dict(t=0, l=0, r=0, b=0),  
+    showlegend=False,
+)
 
 
 
@@ -217,16 +249,16 @@ app.layout = dbc.Container([
 			Notre entreprise d’électronique vend __19 produits__ différents regroupés en __5 catégories__. On compte dans les produits vendus 2 ordinateurs, 7 accessoires,
 			3 téléphones, 4 écrans et 2 machines à laver. Pour plus d'information sur les produits vendus veuillez vous referez au diagramme ci-dessous.
 		'''),
-		dbc.Card([
+		dbc.Card(
+			dbc.CardBody([
 				html.H2("5 CATÉGORIES DE 19 PRODUITS"),
-				dcc.Graph(figure=Parcats, config=config_dash),
+				dcc.Graph(figure=parcats, config=config_dash),
 				dbc.Alert('''Ce diagramme ce décompose en deux colones. A gauche, on liste les differentes categories de produits vendus. 
 					A droite on observe la liste des 19 produits vendus par notre entreprise d'électronique''', 
 					color="light",
 					className="card-text"),
 			]),
-		
-				
+		className='border-0'),				
 		dcc.Markdown('''
 			Après avoir pris connaissances des differents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
 			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente  le plus gros chiffre de ventes.
@@ -247,7 +279,7 @@ app.layout = dbc.Container([
 				dbc.Card(
 					dbc.CardBody([
 						html.H6(f'{rank+1}.  {p}', className="card-subtitle text-secondary"),
-						html.H3(f"{int(p_revenue/sales_revenue * 100)} % du CA", className="card-title")
+						html.H3(f"{int(p_revenue/sales_revenue * 100)} % du CA", className="card-title"),
 					]),
 					className="border-0"
 				),
@@ -257,6 +289,10 @@ app.layout = dbc.Container([
 		]),
 		dbc.Row(dbc.Col(html.H3("Classement des produits selon leur importance pour le Chiffre d'Affaires"))),
 		dcc.Graph(figure=product_bar, config=config_dash),
+		dbc.Alert('''Ce diagramme liste dans l'ordre décroisant les produits selon leur importance pour le Chiffre d'Affaires. 
+							On attribue à chaque catégorie une couleur afin de distinguer la catégorie de chacun des produits''', 
+						color="light",
+						className="card-text"),
         dbc.Button(
             "Cliquez ici pour continuer l'analyse",
             id="collapse-button",
@@ -264,11 +300,31 @@ app.layout = dbc.Container([
             color="secondary",
             block=True
         ),
+    # Hidden part 1
         dbc.Collapse(
-            dbc.Card(dbc.CardBody("This content is hidden in the collapse")),
+        	dbc.Card(
+        		dbc.CardBody(
+        			[
+	        			html.P('''[Dans cette partie d'approfondisement, nous verrons les relations entre le prix des produits et leurs influences 
+	        				sur le Chifre d'Affaires. Notre objectif est de distinguer les prduits les plus rentables'''), 
+		        		html.P('''En s'appuyant sur les deux diagrammes circulaires ci dessous on constate que les catégories qui vendent le plus ne sont pas celles 
+		        			qui sont les plus influentent pour le Chiffre d'Affaires.'''),
+    	        		html.H2("COMPARAISON ENTRE LE NOMBRE ET LE VOLUME DES VENTES", className="card-title"),
+    	        		html.H3("les produits les plus vendus ne sont pas ceux qui font le plus de volume", className="text-secondary"),
+    	        		dcc.Graph(figure=double_donuts, config=config_dash),
+						dbc.Alert('''Description''', 
+								color="light",
+								className="card-text"),
+			        	html.P('''On observe que trois quart des produits vendus sont des accessoires. Cependant cette categorie ne represente que 13% 
+			        		du Chiffre d'Affaires. La mise en place d'une strategie publicitaire mettant en avant les produits à prix élevés pourrait booster 
+			        		les ventes de notre entreprise d'electronique '''),  
+			        	html.P('''SCATTER PLOT --> VOLUME DE VENTES / PRIX UNITAIRE''')
+
+			    	]),
+			        	className='border-0'),
             id="collapse",
         ),
-		# dcc.Markdown('### Volume de ventes par categories et par produit'),
+		dcc.Markdown('### BLABLABLA'),
 		# # dcc.Graph(id='pie_product', config=config_dash),
 		# # dcc.Graph(id='parcast_product', config=config_dash),
 		# dcc.Markdown('''
