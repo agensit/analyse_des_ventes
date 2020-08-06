@@ -75,8 +75,6 @@ product_bar= go.Figure()
 top3 = product_rank['Sales'][-3:][::-1]
 sales_revenue = product_report['Sales'].sum()
 legend_list = []
-
-# plot
 for product in product_rank.index:
     cat = product_rank.loc[product,'Categories']
     if cat in legend_list:
@@ -93,7 +91,6 @@ for product in product_rank.index:
 	    legendgroup=cat,
 	    showlegend=legend_status,
 	    name=cat))
-# design 
 product_bar.update_layout(
 	margin=dict(l=0, r=0, t=0, b=0),
 	title_font_size=20,
@@ -134,7 +131,6 @@ scatter_plot_product.add_annotation(x=600, y=4e5, text='Machine à laver', font_
 ## DONUT: Analyse du volume de ventes
 labels = categories_list
 colors  = product_report.reset_index(0)['Categories'].apply(lambda x: colors_palette[x])
-# Create subplots: use 'domain' type for Pie subplot
 donut = go.Figure(go.Pie(labels=labels, values=product_report['Quantity Ordered'], marker_colors= colors,
                      hovertemplate="<b>%{label}</b><br>"+
                      "%{percent} des ventes<br>"+
@@ -143,13 +139,25 @@ donut = go.Figure(go.Pie(labels=labels, values=product_report['Quantity Ordered'
                          text=f"<b>{millify(product_report['Quantity Ordered'].sum())}</b><br>Ventes",
                          font=dict(size=25)),
                     ))
-# Use `hole` to create a donut-like pie chart
 donut.update_traces(hole=.4,textinfo='label+percent')
-
 donut.update_layout(
     margin = dict(t=0, l=0, r=0, b=0),  
-    showlegend=False,
-)
+    showlegend=False)
+
+## BAR CHART: Quel est le nombre de produit different acheté par commande?
+df = data.groupby(['Order ID', 'Order Date']).count()['Product'].value_counts()
+df = df.reset_index()
+df['percent'] = np.round(df['Product']/df['Product'].sum() * 100,2)
+df.set_index('index', inplace=True)
+prod_by_order = go.Figure(go.Bar(
+    y = df['Product'],
+    x = df.index,
+    customdata = df['percent'],
+    hovertemplate = '%{y} commandes<br> ↳ soit %{customdata} % des ventes<extra></extra>',
+))
+prod_by_order.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x', margin=dict(l=0, r=0, t=0, b=0))
+prod_by_order.update_yaxes(showgrid=False,showticklabels=False)
+prod_by_order.update_xaxes(title = 'Nombre de produits achetés par commandes', showgrid=False)
 
 ## DASH LAYOUT
 app.layout = dbc.Container([
@@ -229,7 +237,7 @@ app.layout = dbc.Container([
 		# 5 catégories de 19 produits
 		dbc.Card(
 			dbc.CardBody([
-				html.H2("5 catégories de 19 produits"),
+				dbc.Row(dbc.Col(html.H1("5 catégories de 19 produits"), width={'offset':3}, className='mb-1')),
 				dcc.Graph(figure=parcats, config=config_dash),
 				dbc.Alert('''Ce diagramme ce décompose en deux colones. A gauche, on liste les differentes categories de produits vendus. 
 					A droite on observe la liste des 19 produits vendus par notre entreprise d'électronique''', 
@@ -241,8 +249,9 @@ app.layout = dbc.Container([
 		dcc.Markdown('''
 			Après avoir pris connaissances des differents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
 			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente  le plus gros chiffre de ventes.
-		'''), 
-		dbc.Row(dbc.Col(html.H2("Quels sont les produits phares?"))),
+		''', className='mt-5'), 
+		# html.Hr(),
+		dbc.Row(dbc.Col(html.H1("Quels sont les produits phares?"), width={'offset':3}, className='mb-2')),
 		dbc.Row([
 			dbc.Col(
 				dbc.Card(
@@ -263,7 +272,7 @@ app.layout = dbc.Container([
 				width=3,
 			) for rank,(p, p_revenue) in enumerate(zip(top3.index, top3.values))]
 		],className="mb-2"),
-		html.H4("Classement des produits selon leur importance pour le Chiffre d'Affaires"),
+		html.H4("Classement des produits selon leur Chiffre d'Affaires"),
 		dbc.Card(
 			dbc.CardBody(
 			[
@@ -286,21 +295,19 @@ app.layout = dbc.Container([
 					block=True),
 				dbc.Collapse(
 		        	dbc.Card(
-		        		dbc.CardBody(
 		        			[
 		        				dcc.Markdown("""
 		        					À l'aide du graphique en nuage de points ci-dessous on observe une forte corrélation entre le prix de vente d'un produit 
 		        					et le volume total de ses ventes durant l'année 2019. Autrement dit, __les produits avec un prix élevé ont tendances à avoir un volume 
 		        					de ventes important__.
 		        				"""),
-		        				html.H3("Volume de ventes des produits selon leur prix"),
-		    	        		dcc.Graph(figure=scatter_plot_product, config=config_dash, className='mb-0'),
+		        				dbc.Row(dbc.Col(html.H3("Volume de ventes des produits selon leur prix"), width={'offset': 3})),
+		    	        		dcc.Graph(figure=scatter_plot_product, config=config_dash),
 								dbc.Alert('''Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
 									Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
 									ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
 									que le nombre de ventes de ces produits est minces''', 
-										color="light",
-										className="mt-0"),
+										color="light"),
 								dcc.Markdown('''
 									Le graphique ci-dessus permet de mettre en évidence __trois points fondamentaux pour booster les ventes des années 
 									à venir__:
@@ -312,24 +319,27 @@ app.layout = dbc.Container([
 									2. __Stopper la vente de machines à laver__. Cette catégorie rapporte peut à notre entreprise. Il s'agit de produits 
 									encombrant et lourd, leur frais de livraison est élevés. Il est preferable de focaliser nos efforts dans d'autres catégories.
 
-									3. __Continuez la vente d'accesoires__. Cette catégorie représentent 75% des produits vendus, voir figure X. Or comme 96% des 
-									commandes passés ne contiennet qu'un seul achat, voir figure X+1, on peut en conclure que les accesoires attirent la plupart 
-									des clients sur notre site. Notre objectif est de valoriser l'achat de produits haut de gamme afin d'insiter des achats multiples 
-									pour les client venu acheter un accessoire.'''),
-								html.H3("Nombre de ventes des differentes catégories"),
+									3. __Continuez la vente d'accesoires__. Cette catégorie représentent 75% des produits vendus, voir figure X. D'après la figure X+1,
+									96% des commandes ne contiennent qu'un seul produit. On peut en conclure que les accesoires attirent un grand nombre de clients 
+									sur notre site. __Une stratégie interresante serait de valoriser les produits haut de gamme afin d'insiter les clients à réaliser 
+									des achats multiples.__'''),
+								dbc.Row(dbc.Col(html.H3("75% des ventes concernent les accessoires"), width={"offset": 3})),
 								dcc.Graph(figure=donut, config=config_dash),
-								dbc.Alert('''Figure X: On constate que environ 75% des ventes concerne la vente d'accesoires''', 
-										color="light",
-										className="mt-0"),
-					    	]),
-					       	className='border-0'),
+								dbc.Row(dbc.Col(dbc.Alert("Figure X: Nombre de ventes des differentes catégories", color="light", className="mt-0"), width={"offset": 4})),
+								dbc.Row(dbc.Col(html.H3("96% des commandes sont constitués d'un seul produit", className="mb-0"), width={"offset": 3})),
+		    	        		dcc.Graph(figure=prod_by_order, config=config_dash),		
+								dbc.Row(dbc.Col(dbc.Alert("Figure X+1: Quantité de commandes suivant le nombre d'accesoires", color="light"), 
+									width={"offset": 3})),		    	        								
+					    	],
+					       	body=True, className='border-0'),
 		            id="collapse_1",
         		),
 			],
 			color="info",
 			className="mt-2"
 		),
-		dcc.Markdown('### BLABLABLA'),
+		html.H1('2. ANALYSE DES VENTES') ,
+		html.Hr(),
 	])
 ], 
 # fluid=True
