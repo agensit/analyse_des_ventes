@@ -210,7 +210,7 @@ best_city_plot= go.Figure(go.Bar(
     x = df['City'], 
     y = df['Sales'],
     customdata=df['percents'],
-    hovertemplate ='<b>%{y:.3s} $</b><br>'+'soit %{customdata:%} du CA<br><extra></extra>'))
+    hovertemplate ='%{y:.3s} $<br>'+'soit %{customdata:%} du CA<br><extra></extra>'))
 best_city_plot.update_layout(
 	margin = no_margin,
 	hovermode = 'x unified', 
@@ -234,6 +234,14 @@ city_pie_plot.update_traces(
     textinfo='percent+label',
     marker=dict(colors=pie_color, line=dict(color='#000000', width=0.2))
 )
+
+# SCATTER PLOT : Population en fonction des Ventes
+df = pd.read_csv("population.csv")
+sales_pop =px.scatter(df, x='2019estimate', y='Sales', text='City' )
+sales_pop.update_traces(textposition='top center')
+sales_pop.update_xaxes(title="<b>Nombre d'habitants</b>", nticks=5)
+sales_pop.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
+sales_pop.update_layout(margin=dict(l=0, r=0, t=0, b=0))
 
 '''------------------------------------------------------------------------------------------- 
                                             DASH LAYOUT
@@ -430,12 +438,44 @@ app.layout = dbc.Container([
 			],
 			width=dict(offset=3)
 		)),
+		# BAR & PIE CHART: Volume de ventes par ville
 		dcc.Markdown("""A l'aide des figures ci-dessous, on observe que __San Francisco est la ville qui a réalisé le plus gros volume de ventes en 2019__. 
 			De plus, on estime le volume de ventes des 3 villes les plus prolifiques à plus de 50% du Chiffre d'Affaires de 2019"""),
-		dbc.Row(dbc.Col(html.H3("San Francisco est la ville au plus gros volume de ventes"), width={"offset": 3})),
+		dbc.Row(dbc.Col(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), width={"offset": 3})),
 		dcc.Graph(figure=best_city_plot, config=config_dash),
 		dbc.Row(dbc.Col(html.H3("San Francisco, Los Angeles et New York représentent 53% du Chiffres d'Affaires"), width={"offset": 3})),
-		dcc.Graph(figure=city_pie_plot, config=config_dash),		
+		dcc.Graph(figure=city_pie_plot, config=config_dash),	
+		# Quel sont les facteurs qui font que SF vends autant
+		dbc.Alert(
+			[
+				dcc.Markdown("Dans cette partie d'approfondisement, __nous verrons les raisons qui font de San Francisco une ville aussi prolifique__."),
+				dbc.Button("Cliquez ici pour continuer l'analyse",
+					id="collapse_button_2",
+					className="mb-3 mt-3",
+					color="info",
+					block=True),
+				dbc.Collapse(
+		        	dbc.Card(
+		        			[
+		        				html.H3("Pourquoi est-il important de comprendre les caractéristiques de reussite d'une ville?", className='mt-2'),
+		        				dcc.Markdown("""En comprenant les paramêtres important pour booster notre chiffre d'affaires, on pourra les appliqués aux autres 
+		        					lieux de ventes. Il est aussi possible de chercher de nouveaux marchés aux caractéristiques similaires."""),
+		        				html.H3("Le nombre d'habitants est il un facteur important?", className='mt-4'),
+		        				dcc.Markdown("""San francisco n'est pas la ville la plus peuplé. En regardant la figure ci-dessous on se rends compte que __le volume 
+		        					des ventes est peu correllé aux nombres d'habitants__. La ville de New York par example posséde dix fois plus d'habitants mais son 
+		        					chiffre d'affaires est deux fois moins importants que celui de San Francisco."""),
+								dbc.Row(dbc.Col(html.H3("Volume de ventes des villes selon leur population"), width={'offset': 3}), className='mt-4'),
+		        				dcc.Graph(figure=sales_pop, config=config_dash),
+		        				html.H3("Le salaire moyen est il un facteur important?", className='mt-4'),
+
+					    	],
+					       	body=True, className='border-0'),
+		            id="collapse_2",
+        		),
+			],
+			color="info",
+			className="mt-4"
+		),		
 	])
 ], 
 # fluid=True
@@ -468,5 +508,15 @@ def toggle_collapse_1(n, is_open):
         return not is_open
     return is_open
 
+# 2. Analyse des lieux de ventes,bouton analyse detailée
+@app.callback(
+    Output("collapse_2", "is_open"),
+    [Input("collapse_button_2", "n_clicks")],
+    [State("collapse_2", "is_open")],
+)
+def toggle_collapse_2(n, is_open):
+    if n:
+        return not is_open
+    return is_open
 if __name__ == '__main__':
     app.run_server(debug=True)
