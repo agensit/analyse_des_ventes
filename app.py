@@ -165,7 +165,7 @@ prod_by_order = go.Figure(go.Bar(
     x = df.index,
   	marker=dict(color=blue_info_color),
     customdata = df['percent'],
-    hovertemplate = '%{y} commandes<br> ↳ soit %{customdata} % des ventes<extra></extra>',
+    hovertemplate = '<b>%{y} commandes</b><br> ↳ soit %{customdata} % des ventes<extra></extra>',
 ))
 prod_by_order.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x', margin=no_margin)
 prod_by_order.update_yaxes(showgrid=False,showticklabels=False)
@@ -235,13 +235,39 @@ city_pie_plot.update_traces(
     marker=dict(colors=pie_color, line=dict(color='#000000', width=0.2))
 )
 
+# DETAILED
+df = pd.read_csv("city_info.csv")
+
 # SCATTER PLOT : Population en fonction des Ventes
-df = pd.read_csv("population.csv")
-sales_pop =px.scatter(df, x='2019estimate', y='Sales', text='City' )
+sales_pop = px.scatter(df, x='pop_2019', y='Sales', text='City' )
 sales_pop.update_traces(textposition='top center')
 sales_pop.update_xaxes(title="<b>Nombre d'habitants</b>", nticks=5)
 sales_pop.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
 sales_pop.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+
+# SCATTER PLOT : Saliare moyen en fonction des Ventes
+sales_income = px.scatter(df, x='income_2010', y='Sales', text='City' )
+sales_income.update_traces(
+	textposition='top center',
+	marker=dict(
+		size=10,
+		color = blue_info_color,		
+		line=dict(width=0.5, color='black')))
+sales_income.update_xaxes(title="<b>Salaire moyen</b>, en $", nticks=5)
+sales_income.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
+sales_income.update_layout(margin=dict(l=0, r=0, t=0, b=0))
+
+# SCATTER PLOT : Saliare moyen en fonction des Ventes
+sales_ads = px.scatter(df, x='ads_budget', y='Sales', text='City' )
+sales_ads.update_traces(
+	textposition='top center',
+	marker=dict(
+		size=10,
+		color = blue_info_color,
+		line=dict(width=0.5, color='black')))
+sales_ads.update_xaxes(title="<b>Budget publicitaire</b>, par ville", nticks=5)
+sales_ads.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
+sales_ads.update_layout(margin=dict(l=0, r=0, t=0, b=0))
 
 '''------------------------------------------------------------------------------------------- 
                                             DASH LAYOUT
@@ -303,7 +329,7 @@ app.layout = dbc.Container([
 				similaires à celui ci-dessous à la fin de chacune des trois parties.'''),
 	        dbc.Button(
 	            "Cliquez ici pour continuer l'analyse",
-	            className="mb-3 mt-3",
+	            className="mb-2 mt-3",
 	            color="info",
 	            id="collapse_button_0",
 	            block=True),
@@ -325,7 +351,7 @@ app.layout = dbc.Container([
 		# 5 catégories de 19 produits
 		dbc.Card(
 			dbc.CardBody([
-				dbc.Row(dbc.Col(html.H1("5 catégories de 19 produits"), width={'offset':3}, className='mb-1')),
+				dbc.Row(html.H1("5 catégories de 19 produits"), justify="center", className='mb-1'),
 				dcc.Graph(figure=parcats, config=config_dash),
 				dbc.Alert('''Ce diagramme ce décompose en deux colones. A gauche, on liste les differentes categories de produits vendus. 
 					A droite on observe la liste des 19 produits vendus par notre entreprise d'électronique''', 
@@ -336,9 +362,9 @@ app.layout = dbc.Container([
 		# Quels sont les produits phares?				
 		dcc.Markdown('''
 			Après avoir pris connaissances des differents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
-			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente  le plus gros chiffre de ventes.
+			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente le plus gros chiffre de ventes.
 		''', className='mt-5'), 
-		dbc.Row(dbc.Col(html.H1("Quels sont les produits phares?"), width={'offset':3}, className='mb-2')),
+		dbc.Row(html.H1("Quels sont les produits phares?"), justify="center", className='mb-2'),
 		dbc.Row([
 			dbc.Col(
 				dbc.Card(
@@ -377,48 +403,48 @@ app.layout = dbc.Container([
 					à l'aide de l'analyse de données'''),
 				dbc.Button("Cliquez ici pour continuer l'analyse",
 					id="collapse_button_1",
-					className="mb-3 mt-3",
+					className="mb-2 mt-3",
 					color="info",
 					block=True),
 				dbc.Collapse(
 		        	dbc.Card(
-		        			[
-		        				dcc.Markdown("""
-		        					À l'aide du graphique en nuage de points ci-dessous on observe une forte corrélation entre le prix de vente d'un produit 
-		        					et le volume total de ses ventes durant l'année 2019. Autrement dit, __les produits avec un prix élevé ont tendances à avoir un volume 
-		        					de ventes important__.
-		        				"""),
-		        				dbc.Row(dbc.Col(html.H3("Volume de ventes des produits selon leur prix"), width={'offset': 3})),
-		    	        		dcc.Graph(figure=scatter_plot_product, config=config_dash),
-								dbc.Alert('''Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
-									Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
-									ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
-									que le nombre de ventes de ces produits est minces''', 
-										color="light"),
-								dcc.Markdown('''
-									Le graphique ci-dessus permet de mettre en évidence __trois points fondamentaux pour booster les ventes des années 
-									à venir__:
+	        			[
+	        				dcc.Markdown("""
+	        					À l'aide du graphique en nuage de points ci-dessous on observe une forte corrélation entre le prix de vente d'un produit 
+	        					et le volume total de ses ventes durant l'année 2019. Autrement dit, __les produits avec un prix élevé ont tendances à avoir un volume 
+	        					de ventes important__.
+	        				"""),
+	        				dbc.Row(html.H3("Volume de ventes des produits selon leur prix"), justify="center"),
+	    	        		dcc.Graph(figure=scatter_plot_product, config=config_dash),
+							dbc.Alert('''Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
+								Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
+								ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
+								que le nombre de ventes de ces produits est minces''', 
+									color="light"),
+							dcc.Markdown('''
+								Le graphique ci-dessus permet de mettre en évidence __trois points fondamentaux pour booster les ventes des années 
+								à venir__:
 
-									1. __Proposer davantage de produits haut de gamme__. On constate que le macbook pro est le seul ordinateur haut de gamme 
-									proposé. Le Chiffre d'Affaires pourait augmenter en offrant d'autres offres d'ordinateurs haut de gammes. 
-									La même logique est appliquable pour les télephones.
+								1. __Proposer davantage de produits haut de gamme__. On constate que le macbook pro est le seul ordinateur haut de gamme 
+								proposé. Le Chiffre d'Affaires pourait augmenter en offrant d'autres offres d'ordinateurs haut de gammes. 
+								La même logique est appliquable pour les télephones.
 
-									2. __Stopper la vente de machines à laver__. Cette catégorie rapporte peut à notre entreprise. Il s'agit de produits 
-									encombrant et lourd, leur frais de livraison est élevés. Il est preferable de focaliser nos efforts dans d'autres catégories.
+								2. __Stopper la vente de machines à laver__. Cette catégorie rapporte peut à notre entreprise. Il s'agit de produits 
+								encombrant et lourd, leur frais de livraison est élevés. Il est preferable de focaliser nos efforts dans d'autres catégories.
 
-									3. __Continuer la vente d'accesoires__. Cette catégorie représentent 75% des produits vendus, voir figure X. D'après la figure X+1,
-									96% des commandes ne contiennent qu'un seul produit. On peut en conclure que les accesoires attirent un grand nombre de clients 
-									sur notre site. __Une stratégie interresante serait de valoriser les produits haut de gamme afin d'insiter les clients à réaliser 
-									des achats multiples.__'''),
-								dbc.Row(dbc.Col(html.H3("75% des ventes concernent les accessoires"), width={"offset": 3})),
-								dcc.Graph(figure=donut, config=config_dash),
-								dbc.Row(dbc.Col(dbc.Alert("Figure X: Nombre de ventes des differentes catégories", color="light", className="mt-0"), width={"offset": 4})),
-								dbc.Row(dbc.Col(html.H3("96% des commandes sont constitués d'un seul produit", className="mb-0"), width={"offset": 3})),
-		    	        		dcc.Graph(figure=prod_by_order, config=config_dash),		
-								dbc.Row(dbc.Col(dbc.Alert("Figure X+1: Quantité de commandes suivant le nombre de produits différents achetés", color="light"), 
-									width={"offset": 3})),		    	        								
-					    	],
-					       	body=True, className='border-0'),
+								3. __Continuer la vente d'accesoires__. Cette catégorie représentent 75% des produits vendus, voir figure X. D'après la figure X+1,
+								96% des commandes ne contiennent qu'un seul produit. On peut en conclure que les accesoires attirent un grand nombre de clients 
+								sur notre site. __Une stratégie interresante serait de valoriser les produits haut de gamme afin d'insiter les clients à réaliser 
+								des achats multiples.__'''),
+							dbc.Row(html.H3("75% des ventes concernent les accessoires"), justify="center"),
+							dcc.Graph(figure=donut, config=config_dash),
+							dbc.Row(dbc.Alert("Figure X: Nombre de ventes des differentes catégories", color="light", className="mt-0"), justify="center"),
+							dbc.Row(html.H3("96% des commandes sont constitués d'un seul produit", className="mb-0"), justify="center"),
+	    	        		dcc.Graph(figure=prod_by_order, config=config_dash),		
+							dbc.Row(dbc.Alert("Figure X+1: Quantité de commandes suivant le nombre de produits différents achetés", color="light"), 
+								justify="center"),		    	        								
+				    	],
+				       	body=True, className='border-0'),
 		            id="collapse_1",
         		),
 			],
@@ -441,46 +467,67 @@ app.layout = dbc.Container([
 		# BAR & PIE CHART: Volume de ventes par ville
 		dcc.Markdown("""A l'aide des figures ci-dessous, on observe que __San Francisco est la ville qui a réalisé le plus gros volume de ventes en 2019__. 
 			De plus, on estime le volume de ventes des 3 villes les plus prolifiques à plus de 50% du Chiffre d'Affaires de 2019"""),
-		dbc.Row(dbc.Col(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), width={"offset": 3})),
+		dbc.Row(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), justify="center"),
 		dcc.Graph(figure=best_city_plot, config=config_dash),
-		dbc.Row(dbc.Col(html.H3("San Francisco, Los Angeles et New York représentent 53% du Chiffres d'Affaires"), width={"offset": 3})),
-		dcc.Graph(figure=city_pie_plot, config=config_dash),	
-		# Quel sont les facteurs qui font que SF vends autant
+		# dbc.Row(html.H3("San Francisco, Los Angeles et New York représentent 53% du Chiffres d'Affaires", className="mt-5"), justify="center"),
+		# dcc.Graph(figure=city_pie_plot, config=config_dash, className="mt-2"),	
+		dcc.Markdown("""Maintenant que nous savons que San Francisco est la ville la plus prolifique, il serait interresant d'en comprendre les raisons.
+		En effet __comprendre les facteurs de réussite d'une ville est un élément extrémement important pour booster le chiffre d'affaire des années à venir__. 
+		Il peut être utile pour cibler de nouveau marcher mais aussi pour corriger notre strategie de ventes dans des villes à faible chiffre d'affaires.
+			""", className="mt-3"),
+		# Quel sont les facteurs qui sont font fluctué le volume des ventes
 		dbc.Alert(
 			[
-				dcc.Markdown("Dans cette partie d'approfondisement, __nous verrons les raisons qui font de San Francisco une ville aussi prolifique__."),
+				dcc.Markdown("""__Souvent difficile à déterminer__, ces facteurs peuvent dépendre d'un grand nombre de paramètres. Dans la partie d'approfondisement 
+					ci-dessous nous analyserons la correlation entre:"""),
+				dcc.Markdown("""
+					- le volume des ventes  et __le salaire moyen__
+					- le volume des ventes et __le budget publicitaire__"""),
 				dbc.Button("Cliquez ici pour continuer l'analyse",
 					id="collapse_button_2",
-					className="mb-3 mt-3",
+					className="mb-2 mt-3",
 					color="info",
 					block=True),
 				dbc.Collapse(
 		        	dbc.Card(
-		        			[
-		        				html.H3("Pourquoi est-il important de comprendre les caractéristiques de reussite d'une ville?", className='mt-2'),
-		        				dcc.Markdown("""En comprenant les paramêtres important pour booster notre chiffre d'affaires, on pourra les appliqués aux autres 
-		        					lieux de ventes. Il est aussi possible de chercher de nouveaux marchés aux caractéristiques similaires."""),
-		        				html.H3("Le nombre d'habitants est il un facteur important?", className='mt-4'),
-		        				dcc.Markdown("""San francisco n'est pas la ville la plus peuplé. En regardant la figure ci-dessous on se rends compte que __le volume 
-		        					des ventes est peu correllé aux nombres d'habitants__. La ville de New York par example posséde dix fois plus d'habitants mais son 
-		        					chiffre d'affaires est deux fois moins importants que celui de San Francisco."""),
-								dbc.Row(dbc.Col(html.H3("Volume de ventes des villes selon leur population"), width={'offset': 3}), className='mt-4'),
-		        				dcc.Graph(figure=sales_pop, config=config_dash),
-		        				html.H3("Le salaire moyen est il un facteur important?", className='mt-4'),
-
-					    	],
-					       	body=True, className='border-0'),
+	        			[
+	      #   				html.H3("Peu de corrélation avec le nombre d'habitants"),
+	      #   				dcc.Markdown("""A premiere vu on pourait pensé que le nombre d'habitant est lié au volume de ventes, pourtant ce n'est pas le cas. 
+	      #   					En regardant la figure ci-dessous on se rends compte que __le volume des ventes est peu correllé aux nombres d'habitants__. 
+	      #   					La ville de New York par example posséde dix fois plus d'habitants que San Francisco pourtant son chiffre d'affaires est deux 
+	      #   					fois moins importants."""),
+							# dbc.Row(html.H4("Volume de ventes des villes selon leur population", className='mt-2'), justify="center"),
+	      #   				dcc.Graph(figure=sales_pop, config=config_dash),
+	        				html.H3("Peu de corrélation avec le salaire moyen"),
+	        				dcc.Markdown("""
+	        					A premiere vu on pourait pensé que le niveau de vie est lié aux volumes de ventes. Les appareils électronique ne sont pas de premiere 
+	        					nécéssité. Il s'agit de produits réservé à une classe sociale avec un minimun de moyen. __Pourtant en regardant le graph ci-dessous,
+	        					on remarque que ce n'est pas le cas, le niveau de vie à peut d'influence sur le volume des ventes__. Par exemple, la ville de Seattle 
+	        					posséde le salaire moyen le plus elevée, 39.3k $, pourtant elle compte parmis les villes avec le volumes de ventes le plus bas, 2.7 M $"""),
+	        				dcc.Graph(figure=sales_income, config=config_dash),	
+	        				dbc.Row(dbc.Alert("Figure X+3: Volume de ventes des villes selon le salaire moyen", color="light", className="mt-0"), justify="center"),
+	        				html.H3("Forte corrélation avec le budget publicitaire", className='mt-2'),
+	        				dcc.Markdown("""En s'appuyant sur la figure ci-dessous on constate que le budget aloué à la publicité à beaucoup d'influence sur le volume 
+	        					des ventes."""),
+	        				dcc.Graph(figure=sales_ads, config=config_dash),
+	        				dbc.Row(dbc.Alert("Figure X+4: Volume de ventes des villes selon le budget alloué à la publicté", color="light", className="mt-0"), 
+	        					justify="center"),
+        					dcc.Markdown("""EXPLIQUER QUE CA DEPENDS DE PLEIN D AUTRES FACTEURS"""),	       				
+				    	],
+					    body=True, className='border-0'),
 		            id="collapse_2",
         		),
 			],
 			color="info",
 			className="mt-4"
-		),		
+		),	
+		html.H1('3. ANALYSE TEMPORELLE') ,
+		html.Hr(),
+	
 	])
 ], 
 # fluid=True
 )
-
 
 '''------------------------------------------------------------------------------------------- 
                                             INTERACTIVITÉ
