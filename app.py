@@ -169,7 +169,7 @@ prod_by_order = go.Figure(go.Bar(
 ))
 prod_by_order.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x', margin=no_margin)
 prod_by_order.update_yaxes(showgrid=False,showticklabels=False)
-prod_by_order.update_xaxes(title = 'Nombre de produits achetés par commandes', showgrid=False)
+prod_by_order.update_xaxes(title = 'Nombre de produits achetés par commandes', showgrid=False, linecolor='black', linewidth=0.5)
 
 ## 2. ANALYSE DES LIEUX DE VENTES
 ## -------------------------------
@@ -180,28 +180,43 @@ city_sales['percents'] = city_sales['Sales']/city_sales['Sales'].sum()
 
 # MAP: cartographie des lieux de ventes
 map_plot = go.Figure(go.Scattermapbox(
-        lat = city_sales['lat'], 
-        lon = city_sales['long'],
-        marker = dict(size=city_sales['Sales']/200000, opacity=0.5, color='#094D92'),
-        mode="markers+text",
-        textposition="top center",
-        textfont=dict(family="sans serif", size=14, color='black'),
-        hovertemplate ='<b>%{text}</b><br>' +
-                '%{customdata} $<extra></extra>',
-        text = cities,
-        customdata = city_sales['Sales_text']))
+  lat = city_sales['lat'], 
+  lon = city_sales['long'],
+  marker = dict(
+    size=city_sales['Sales']/350000, 
+    opacity=0.5,
+    allowoverlap=True,
+    color='#094D92'),
+  hoverinfo='none'
+))
+
+# add border
+map_plot.add_trace(go.Scattermapbox(
+  lat = city_sales['lat'], 
+  lon = city_sales['long'],
+  marker = dict(
+    size=city_sales['Sales']/200000, 
+    opacity=0.3,
+    allowoverlap=True,
+    color='#094D92'),
+  mode="markers+text",
+  textposition="top center",
+  textfont=dict(family="sans serif", size=16, color='black'),
+  hovertemplate ='<b>%{text}</b><br>' + '%{customdata} $<extra></extra>',
+  text = cities,
+  customdata = city_sales['Sales_text']))
                      
 map_plot.update_layout(
-	hoverlabel=dict(
-		bgcolor="white",
-		font_size=12),
-	margin = no_margin,
-	mapbox = dict(
-		accesstoken = mapbox_access_token,
-	   	zoom = 2.5,
-	   	center = go.layout.mapbox.Center(lat=40,lon=-97),
-	   	style = "mapbox://styles/axelitorosalito/ckb2erv2q148d1jnp7959xpz0"), 
-	showlegend=False
+    hoverlabel=dict(
+        bgcolor="white",
+        font_size=12),
+    margin=no_margin,
+    mapbox = dict(
+        accesstoken = mapbox_access_token,
+        zoom = 2.9,
+        center = go.layout.mapbox.Center(lat=40,lon=-97),
+        style = "mapbox://styles/axelitorosalito/ckb2erv2q148d1jnp7959xpz0"), 
+    showlegend=False
 )
 
 # BAR PLOT : San Francisco est la ville au plus gros volume de ventes
@@ -245,29 +260,46 @@ sales_pop.update_xaxes(title="<b>Nombre d'habitants</b>", nticks=5)
 sales_pop.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
 sales_pop.update_layout(margin=no_margin)
 
-# SCATTER PLOT : Saliare moyen en fonction des Ventes
-sales_income = px.scatter(df, x='income_2010', y='Sales', text='City' )
+# SCATTER PLOT : Salaire moyen en fonction des Ventes
+sales_income = go.Figure(go.Scatter(
+    x=df["income_2010"], 
+    y=df["Sales"],
+    mode="markers+text",
+    text=df["City"],
+    hovertemplate="<b>%{text}</b><br>"+"<b>%{y:.2s} $</b> de chiffres d'affaires<br>"+ 
+       "<b>%{x:.2s} $</b> de salaire moyen<extra></extra>"))
 sales_income.update_traces(
-	textposition='top center',
-	marker=dict(
-		size=10,
-		color = blue_info_color,		
-		line=dict(width=0.5, color='black')))
+    textposition='top center',
+    marker=dict(
+        size=10,
+        color = blue_info_color,
+        line=dict(width=0.5, color='black')))
 sales_income.update_xaxes(title="<b>Salaire moyen</b>, en $", nticks=5)
 sales_income.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
-sales_income.update_layout(margin=no_margin)
+sales_income.update_layout(
+  hoverlabel=dict(bgcolor="white", font_size=14),
+  margin=no_margin)
 
 # SCATTER PLOT : Saliare moyen en fonction des Ventes
 sales_ads = px.scatter(df, x='ads_budget', y='Sales', text='City' )
+sales_ads = go.Figure(go.Scatter(
+    x=df["ads_budget"], 
+    y=df["Sales"],
+    mode="markers+text",
+    text=df["City"],
+    hovertemplate="<b>%{text}</b><br>"+"<b>%{y:.2s} $</b> de chiffres d'affaires<br>"+ 
+       "<b>%{x:.2s} $</b>de budget publicitaire<extra></extra>"))
 sales_ads.update_traces(
-	textposition='top center',
-	marker=dict(
-		size=10,
-		color = blue_info_color,
-		line=dict(width=0.5, color='black')))
-sales_ads.update_xaxes(title="<b>Budget publicitaire</b>, en $", nticks=5)
+    textposition='top center',
+    marker=dict(
+        size=10,
+        color = blue_info_color,
+        line=dict(width=0.5, color='black')))
+sales_ads.update_xaxes(title="<b>Budget publicitaire</b>, par ville", nticks=5)
 sales_ads.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
-sales_ads.update_layout(margin=no_margin)
+sales_ads.update_layout(
+    hoverlabel=dict(bgcolor="white", font_size=14),
+    margin=no_margin)
 
 ## 3. ANALYSE  TEMPORELLE
 ## -----------------------
@@ -286,27 +318,29 @@ ca_per_month = go.Figure(go.Scatter(
 ))
 ca_per_month.update_yaxes(title="<b>Chiffre d'Affaires mensuelle</b>, en $", nticks=5)
 ca_per_month.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x unified', margin=no_margin)
-ca_per_month.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x unified',
-                  shapes=[
-                    dict(
-                        type="rect",
-                        xref="x", x0=5, x1=8,
-                        yref="paper", y0=0, y1=1,
-                        fillcolor="grey",
-                        opacity=0.2,
-                        layer="below",
-                        line_width=0,
-                    ),
-                      dict(
-                        type="rect",
-                        xref="x", x0=0, x1=2,
-                        yref="paper", y0=0, y1=1,
-                        fillcolor="grey",
-                        opacity=0.2,
-                        layer="below",
-                        line_width=0,
-                    )
-                ])
+ca_per_month.update_layout(
+  hoverlabel=dict(bgcolor="white",font_size=14), 
+  hovermode='x unified',
+  shapes=[
+          dict(
+              type="rect",
+              xref="x", x0=5, x1=8,
+              yref="paper", y0=0, y1=1,
+              fillcolor="grey",
+              opacity=0.2,
+              layer="below",
+              line_width=0,
+          ),
+            dict(
+              type="rect",
+              xref="x", x0=0, x1=2,
+              yref="paper", y0=0, y1=1,
+              fillcolor="grey",
+              opacity=0.2,
+              layer="below",
+              line_width=0,
+          )
+        ])
 ca_per_month.add_annotation(x=6.5, y=3.5e6, text='Vacances Scolaires', font=dict(size=14), showarrow=False)
 ca_per_month.add_annotation(x=1, y=3.5e6, text='Après Fêtes', font=dict(size=14), showarrow=False)
 ca_per_month.add_annotation(x=11, y=4.6e6, font=dict(size=14), text="Fêtes")
@@ -379,11 +413,11 @@ app.layout = dbc.Container([
 			Attention l'entreprise n'existe pas, il s'agit de données fictives. Ci-dessous vous pouvez vous familiraser avec le jeu de données 
 			que nous allons utiliser durant toute notre analyse.
 		'''),
-		dbc.Table.from_dataframe(dirty_data[:4], striped=True, bordered=True, hover=True, responsive=True),
-		dbc.Alert('''
-			Échantilon des données que nous allons utiliser durant notre analyse. On y retrouve des informations pertinentes sur nos clients, 
-			tel que les produits achetés, l'heure d'achat où encore l’adresse de livraison.''', color='light'
-		),
+		dbc.Table.from_dataframe(dirty_data[:4], striped=True, bordered=True, hover=True, responsive=True, className="mb-0"),
+		dbc.Row(dbc.Alert('''
+      Échantilon des données que nous allons utiliser durant notre analyse. On y retrouve des informations pertinentes sur nos clients, 
+      tel que les produits achetés, l'heure d'achat où encore l’adresse de livraison.''', color='light', className="mt-0"),
+    justify="center"),
 		dcc.Markdown('''
 			Pour chaque commande un ensemble d'informations est collecté sur le client. Par example en lisant la premiere ligne du tableau ci-dessus on sait que
 			le client répertorié par l'id __295665__ a acheté un __Macbook Pro__ à __1700$__ le __30 décembre 2019 à 00:01__, son adresse de livraison est 
@@ -438,19 +472,18 @@ app.layout = dbc.Container([
 		# 5 catégories de 19 produits
 		dbc.Card(
 			dbc.CardBody([
-				dbc.Row(html.H1("5 catégories de 19 produits"), justify="center", className='mb-1'),
+				dbc.Row(html.H1("5 catégories de 19 produits"), justify="center", className='mb-0'),
 				dcc.Graph(figure=parcats, config=config_dash),
-				dbc.Alert('''Ce diagramme ce décompose en deux colones. A gauche, on liste les differentes categories de produits vendus. 
-					A droite on observe la liste des 19 produits vendus par notre entreprise d'électronique''', 
-					color="light",
-					className="card-text"),
+				dbc.Row(dbc.Alert('''Figure 1: On a à gauche les differentes catégories de produits vendus, à droite la liste des 19 produits''', 
+          color="light"),
+        justify='center'),
 			]),
 		className='border-0'),
 		# Quels sont les produits phares?				
 		dcc.Markdown('''
 			Après avoir pris connaissances des differents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
 			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente le plus gros chiffre de ventes.
-		''', className='mt-5'), 
+		''', className='mt-2'), 
 		dbc.Row(html.H1("Quels sont les produits phares?"), justify="center", className='mb-2'),
 		dbc.Row([
 			dbc.Col(
@@ -477,10 +510,10 @@ app.layout = dbc.Container([
 			dbc.CardBody(
 			[
 				dcc.Graph(figure=product_bar, config=config_dash),
-				dbc.Alert('''Ce diagramme liste dans l'ordre décroisant les produits selon leur importance pour le Chiffre d'Affaires. 
-					On attribue à chaque catégorie une couleur afin de distinguer la catégorie de chacun des produits''', 
-					color="light",
-					className="card-text"),
+				dbc.Row(dbc.Alert("Figure 2: ce diagramme liste les produits selon leur ventes. On attribue à chaque catégorie une couleur", 
+          color="light",
+					className="card-text"), 
+        justify='center'),
 			]),
 		),
 		# PARTIE 1 DETAILÉ : stratégie produit
@@ -494,21 +527,21 @@ app.layout = dbc.Container([
 					color="info",
 					block=True),
 				dbc.Collapse(
-		        	dbc.Card(
-	        			[
-	        				dcc.Markdown("""
-	        					À l'aide du graphique en nuage de points ci-dessous on observe une forte corrélation entre le prix de vente d'un produit 
-	        					et le volume total de ses ventes durant l'année 2019. Autrement dit, __les produits avec un prix élevé ont tendances à avoir un volume 
-	        					de ventes important__.
-	        				"""),
-	        				dbc.Row(html.H3("Volume de ventes des produits selon leur prix"), justify="center"),
-	    	        		dcc.Graph(figure=scatter_plot_product, config=config_dash),
-							dbc.Alert('''Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
-								Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
-								ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
-								que le nombre de ventes de ces produits est minces''', 
-									color="light"),
+        	dbc.Card(
+      			[
+      				dcc.Markdown("""
+      					À l'aide du graphique en nuage de points ci-dessous on observe une forte corrélation entre le prix de vente d'un produit 
+      					et le volume total de ses ventes durant l'année 2019. Autrement dit, __les produits avec un prix élevé ont tendances à avoir un volume 
+      					de ventes important__."""),
+      				dbc.Row(html.H3("Volume de ventes des produits selon leur prix"), justify="center"),
+  	        	dcc.Graph(figure=scatter_plot_product, config=config_dash),
+              dbc.Row(dbc.Alert('''Figure 3: volume de ventes des produits selon leur prix.''', color="light", className="mb-0"), justify="center"),
 							dcc.Markdown('''
+                Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
+                Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
+                ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
+                que le nombre de ventes de ces produits est minces''', className="mt-0"),
+              dcc.Markdown('''
 								Le graphique ci-dessus permet de mettre en évidence __trois points fondamentaux pour booster les ventes des années 
 								à venir__:
 
@@ -525,15 +558,13 @@ app.layout = dbc.Container([
 								des achats multiples.__'''),
 							dbc.Row(html.H3("75% des ventes concernent les accessoires"), justify="center"),
 							dcc.Graph(figure=donut, config=config_dash),
-							dbc.Row(dbc.Alert("Figure X: Nombre de ventes des differentes catégories", color="light", className="mt-0"), justify="center"),
+							dbc.Row(dbc.Alert("Figure 4: nombre de ventes des differentes catégories", color="light", className="mt-0"), justify="center"),
 							dbc.Row(html.H3("96% des commandes sont constitués d'un seul produit", className="mb-0"), justify="center"),
-	    	        		dcc.Graph(figure=prod_by_order, config=config_dash),		
-							dbc.Row(dbc.Alert("Figure X+1: Quantité de commandes suivant le nombre de produits différents achetés", color="light"), 
-								justify="center"),		    	        								
-				    	],
-				       	body=True, className='border-0'),
-		            id="collapse_1",
-        		),
+        		  dcc.Graph(figure=prod_by_order, config=config_dash),		
+							dbc.Row(dbc.Alert("Figure 5: quantité de commandes suivant le nombre de produits différents achetés", color="light"), justify="center"),		    	        								
+		    	  ],
+		        body=True, className='border-0'),
+		    id="collapse_1",),
 			],
 			color="info",
 			className="mt-2"
@@ -544,24 +575,20 @@ app.layout = dbc.Container([
 		html.Hr(),
 		dcc.Markdown("""__Le service de livraison est disponible dans 9 villes Américaine__, on compte des villes tels que New York, Los Angeles ou
 		encore San Francisco..."""),
-		dbc.Row(dbc.Col(
-			[
-				dcc.Graph(figure=map_plot, config={**config_dash, **{'scrollZoom': False}}),
-				dbc.Alert("""Figure X+2: Volume de ventes de chaque ville durant l'année 2019""", color="light"),
-			],
-			width=dict(offset=3)
-		)),
+		dcc.Graph(figure=map_plot, config={**config_dash, **{'scrollZoom':False}}),
+		dbc.Row(dbc.Alert("""Figure 6: volume de ventes de chaque ville durant l'année 2019""", color="light"), justify="center"),
 		# BAR & PIE CHART: Volume de ventes par ville
 		dcc.Markdown("""A l'aide des figures ci-dessous, on observe que __San Francisco est la ville qui a réalisé le plus gros volume de ventes en 2019__. 
 			De plus, on estime le volume de ventes des 3 villes les plus prolifiques à plus de 50% du Chiffre d'Affaires de 2019"""),
 		dbc.Row(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), justify="center"),
 		dcc.Graph(figure=best_city_plot, config=config_dash),
+    dbc.Row(dbc.Alert("""Figure 7: classement des villes selon leur volume de ventes en 2019""", color="light"), justify="center"),
 		# dbc.Row(html.H3("San Francisco, Los Angeles et New York représentent 53% du Chiffres d'Affaires", className="mt-5"), justify="center"),
 		# dcc.Graph(figure=city_pie_plot, config=config_dash, className="mt-2"),	
 		dcc.Markdown("""Maintenant que nous savons que San Francisco est la ville la plus prolifique, il serait interresant d'en comprendre les raisons.
 		En effet __comprendre les facteurs de réussite d'une ville est un élément extrémement important pour booster le chiffre d'affaire des années à venir__. 
 		Il peut être utile pour cibler de nouveau marcher mais aussi pour corriger notre strategie de ventes dans des villes à faible chiffre d'affaires.
-			""", className="mt-3"),
+			""", className="mt-0"),
 		# PARTIE 2 DETAILÉE : Quel sont les facteurs qui sont font fluctué le volume des ventes
 		dbc.Alert(
 			[
@@ -592,12 +619,12 @@ app.layout = dbc.Container([
 	        					on remarque que ce n'est pas le cas, le niveau de vie à peut d'influence sur le volume des ventes__. Par exemple, la ville de Seattle 
 	        					posséde le salaire moyen le plus elevée, 39.3k $, pourtant elle compte parmis les villes avec le volumes de ventes le plus bas, 2.7 M $"""),
 	        				dcc.Graph(figure=sales_income, config=config_dash),	
-	        				dbc.Row(dbc.Alert("Figure X+3: Volume de ventes des villes selon le salaire moyen", color="light", className="mt-0"), justify="center"),
+	        				dbc.Row(dbc.Alert("Figure 8: volume de ventes des villes selon le salaire moyen", color="light", className="mt-0"), justify="center"),
 	        				html.H3("Forte corrélation avec le budget publicitaire", className='mt-2'),
 	        				dcc.Markdown("""En s'appuyant sur la figure ci-dessous on constate que le budget aloué à la publicité à beaucoup d'influence sur le volume 
 	        					des ventes."""),
 	        				dcc.Graph(figure=sales_ads, config=config_dash),
-	        				dbc.Row(dbc.Alert("Figure X+4: Volume de ventes des villes selon le budget alloué à la publicté", color="light", className="mt-0"), 
+	        				dbc.Row(dbc.Alert("Figure 9: volume de ventes des villes selon le budget alloué à la publicté", color="light", className="mt-0"), 
 	        					justify="center"),
         					dcc.Markdown("""EXPLIQUER QUE CA DEPENDS DE PLEIN D AUTRES FACTEURS"""),	       				
 				    	],
@@ -620,7 +647,7 @@ app.layout = dbc.Container([
 		dbc.Row(html.H3("Pic de ventes pour les fêtes de fin d'année"), justify='center'),
 	    dcc.Graph(figure=ca_per_month, config=config_dash),
 	    # 
-	    dbc.Row(dbc.Alert("Figure X+5: évolution mensuelle du chiffre d'affaires de 2019", color="light", className="mt-0"), 
+	    dbc.Row(dbc.Alert("Figure 10: évolution mensuelle du chiffre d'affaires de 2019", color="light", className="mt-0"), 
 	        justify="center"),
 	    		dbc.Alert(
 					[
@@ -636,7 +663,7 @@ app.layout = dbc.Container([
 			      	        		dcc.Markdown("""__Le meilleur moment pour afficher la publicté est à 12h et à 19h__, car nos ventes sont maximales pendant cette 
 			      	        			période"""),
 			      	        		dcc.Graph(figure=sales_per_hour, config=config_dash), 
-			        				dbc.Row(dbc.Alert("Figure X+6: Somme du nombres de commandes regroupés par heure d'achat", color="light", className="mt-0"), 
+			        				dbc.Row(dbc.Alert("Figure 11: somme du nombres de commandes regroupés par heure d'achat", color="light", className="mt-0"), 
 			        					justify="center"),			      	        		     				
 						    	],
 							    body=True, className='border-0'),
