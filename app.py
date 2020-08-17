@@ -243,8 +243,8 @@ df = pd.read_csv("data/city_info.csv")
 # SCATTER PLOT : Population en fonction des Ventes
 sales_pop = px.scatter(df, x='pop_2019', y='Sales', text='City' )
 sales_pop.update_traces(textposition='top center')
-sales_pop.update_xaxes(title="<b>Nombre d'habitants</b>", nticks=5)
-sales_pop.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
+sales_pop.update_xaxes(fixedrange=True, title="<b>Nombre d'habitants</b>", nticks=5)
+sales_pop.update_yaxes(fixedrange=True, title="<b>Volume de ventes</b>, en $", nticks=5)
 sales_pop.update_layout(margin=no_margin)
 
 # SCATTER PLOT : Salaire moyen en fonction des Ventes
@@ -261,8 +261,8 @@ sales_income.update_traces(
         size=10,
         color = blue_info_color,
         line=dict(width=0.5, color='black')))
-sales_income.update_xaxes(title="<b>Salaire annuel net moyen </b>, en $", nticks=5)
-sales_income.update_yaxes(title="<b>Volume de ventes</b>, en $", nticks=5)
+sales_income.update_xaxes(fixedrange=True, title="<b>Salaire annuel net moyen </b>, en $", nticks=5)
+sales_income.update_yaxes(fixedrange=True, title="<b>Volume de ventes</b>, en $", nticks=5)
 sales_income.update_layout(
   hoverlabel=dict(bgcolor="white", font_size=14),
   margin=no_margin)
@@ -572,7 +572,7 @@ app.layout = dbc.Container([
 		dcc.Markdown("""__Le service de livraison de notre boutique en ligne est disponible dans 9 villes américaine__, on compte des villes tels que New York, 
       Los Angeles ou encore San Francisco... A l'aide des figures ci-dessous, on observe que __San Francisco est la ville qui a réalisé le plus gros 
       volume de ventes en 2019__."""),
-		dcc.Graph(figure=map_plot, config={**config_dash, **{'scrollZoom':False}}),
+		dcc.Graph(figure=map_plot, config={**config_dash, **{'staticPlot': True}}),
 		dbc.Row(dbc.Alert("""Figure 6: volume de ventes de chaque ville durant l'année 2019""", color="light"), justify="center"),
 		# BAR & PIE CHART: Volume de ventes par ville
 		dbc.Row(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), justify="center"),
