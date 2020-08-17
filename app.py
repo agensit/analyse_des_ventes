@@ -25,7 +25,7 @@ import dash_table
 ## PLOTLY
 import plotly.io as pio
 pio.templates.default = "plotly_white"
-config_dash = {'displayModeBar': False, 'showAxisDragHandles':False}
+config_dash = {'displayModeBar': False, 'showAxisDragHandles':False, 'responsive':True}
 no_margin = dict(l=0, r=0, t=0, b=0)
 # get acess to mapbox
 with open('mapbox_token.txt') as f:
@@ -65,8 +65,8 @@ def millify(n):
 
 '''
 ## LOAD DATA
-dirty_data = pd.read_csv('all_data.csv')
-data = pd.read_csv('clean_data.csv')
+raw_data = pd.read_csv('data/raw_data.csv')
+data = pd.read_csv('data/clean_data.csv')
 
 ## 1. ANALYSE DES PRODUITS
 ## -----------------------
@@ -251,7 +251,7 @@ city_pie_plot.update_traces(
 )
 
 # PARTIE DETAILÉE
-df = pd.read_csv("city_info.csv")
+df = pd.read_csv("data/city_info.csv")
 
 # SCATTER PLOT : Population en fonction des Ventes
 sales_pop = px.scatter(df, x='pop_2019', y='Sales', text='City' )
@@ -322,7 +322,7 @@ ca_per_month = go.Figure(go.Scatter(
         color=blue_info_color,
         line=dict(width=0.5, color='black'))
 ))
-ca_per_month.update_yaxes(title="<b>Chiffre d'Affaires mensuelle</b>, en $", nticks=5)
+ca_per_month.update_yaxes(title="<b>Chiffre d'affaires mensuelle</b>, en $", nticks=5)
 ca_per_month.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x unified', margin=no_margin)
 ca_per_month.update_layout(
   hoverlabel=dict(bgcolor="white",font_size=14), 
@@ -347,8 +347,8 @@ ca_per_month.update_layout(
               line_width=0,
           )
         ])
-ca_per_month.add_annotation(x=6.5, y=3.5e6, text='Vacances Scolaires', font=dict(size=14), showarrow=False)
-ca_per_month.add_annotation(x=1, y=3.5e6, text='Après Fêtes', font=dict(size=14), showarrow=False)
+ca_per_month.add_annotation(x=6.5, y=3.5e6, text='<b>Vacances Scolaires</b><br> Période creuse', font=dict(size=14), showarrow=False)
+ca_per_month.add_annotation(x=1, y=3.5e6, text='<b>Après Fêtes</b><br> Période creuse', font=dict(size=14), showarrow=False)
 ca_per_month.add_annotation(x=11, y=4.6e6, font=dict(size=14), text="Fêtes")
 
 # PARTIE DETAILÉE
@@ -406,41 +406,42 @@ app.layout = dbc.Container([
 			# Analyse des ventes d'une entreprise en ligne d'électronique 
 			---
 		'''),
-		dbc.Alert(
-			children='''Ce projet est un exemple dont le but est de vous aidez à envisager les problèmes liés à votre entreprise 
-			sous l'angle de l'analyse de vos données. Notre objectif est de vous démontrer que l'extraction de connaissances 
-			à partir de vos données facilite les prises de décisions et constitue un avantage stratégique.''',
+		dbc.Alert([
+			dcc.Markdown('''Ce projet est un exemple dont le but est de vous aider à envisager les problèmes liés à votre entreprise
+				sous l'angle de l'analyse de vos données. __Notre objectif est de vous démontrer que l'extraction d'informations 
+				à partir de vos données facilite les prises de décisions et constitue un avantage stratégique__.''')],
 			color="info"),
 	##  Introduction et présentation des données
 		dcc.Markdown('''
 			## Introduction et présentation des données
 			---
-			Les données utilisées représente les ventes réalisées par une entreprise d'électronique lors de l’année 2019. 
-			Attention l'entreprise n'existe pas, il s'agit de données fictives. Ci-dessous vous pouvez vous familiraser avec le jeu de données 
+			Les données utilisées représentent les ventes réalisées par une entreprise d'électronique lors de l’année 2019. 
+			Attention l'entreprise n'existe pas, il s'agit de données fictives. Ci-dessous vous pouvez vous familiariser avec le jeu de données 
 			que nous allons utiliser durant toute notre analyse.
 		'''),
-		dbc.Table.from_dataframe(dirty_data[:4], striped=True, bordered=True, hover=True, responsive=True, className="mb-0"),
-		dbc.Row(dbc.Alert('''
-      Échantilon des données que nous allons utiliser durant notre analyse. On y retrouve des informations pertinentes sur nos clients, 
-      tel que les produits achetés, l'heure d'achat où encore l’adresse de livraison.''', color='light', className="mt-0"),
-    justify="center"),
+		dbc.Table.from_dataframe(raw_data[:4], striped=True, bordered=True, hover=True, responsive=True, className="mb-0"),
+		dbc.Row(
+			dbc.Alert('''Échantillon des données que nous allons utiliser durant notre analyse. On y retrouve des informations pertinentes sur nos clients, 
+      			tel que les produits achetés, l'heure d'achat où encore l’adresse de livraison.''', 
+      		color='light', 
+      		className="mt-0"),
+    	justify="center"),
 		dcc.Markdown('''
-			Pour chaque commande un ensemble d'informations est collecté sur le client. Par example en lisant la premiere ligne du tableau ci-dessus on sait que
+			Pour chaque commande un ensemble d'informations est collecté sur le client. Par exemple en lisant la première ligne du tableau ci-dessus on sait que
 			le client répertorié par l'id __295665__ a acheté un __Macbook Pro__ à __1700$__ le __30 décembre 2019 à 00:01__, son adresse de livraison est 
-			le __136 Church St, New York City, NY 10001__. Veuillez vous référer à la liste ci-dessous pour une meilleur compréhension des informations collectés 
+			le __136 Church St, New York City, NY 10001__. Veuillez vous référer à la liste ci-dessous pour une meilleur compréhension des informations collectées 
 			lors d'une commande.
 		'''),
 		dbc.Alert([
 			html.H5("Descriptif des informations récoltées lors d'une commandes"),
 			html.Hr(),
 			dcc.Markdown('''
-				- __ID__, numéro unique par client 
+				- __Numéro de commande__, numéro unique par client 
 				- __Produit__, nom du matériel informatique acheté 
-				- __Quantité commandée__, nombre d’exemplaires vendu
-				- __Prix__, prix unnitaire de chaque produit
+				- __Quantité__, nombre d’exemplaires vendu
+				- __Prix__, prix unitaire de chaque produit
 				- __Date__, date et heure de l'achat
 				- __Adresse__, adresse de livraison
-				- __Catégorie__, nature du produit (Computers, Washing Machine, Gears, TV & Monitor, Phone)
 			''')
 		], color='info'),
 		dcc.Markdown('''
@@ -448,11 +449,11 @@ app.layout = dbc.Container([
 			La suite de ce rapport est divisé en trois parties:
 
 			1. __Analyse des produits__, après avoir découvert la gamme de produit vendu, nous déterminerons les produits phares de l'entreprises
-			2. __Analyse des lieux de ventes__, aprés une rapide présentation des lieux de ventes, nous verrons qu'elles sont les villes les plus prolifiques
-			3. __Analyse des ventes durant l'année__, nous analyserons les tendances d'achat des clients afin d'y determiner les périodes creuses et les périodes pleines  
+			2. __Analyse des lieux de ventes__, après une rapide présentation des lieux de ventes, nous verrons qu'elles sont les villes les plus prolifiques
+			3. __Analyse des ventes durant l'année__, nous analyserons les tendances d'achat des clients afin d'y déterminer les périodes creuses et les périodes pleines  
 		'''),
 		dbc.Alert([
-			html.P('''Nous avons ajouté à la fin de chacun des trois parties des analyses detailés pour les personnes désirant aller plus loin. Vous trouverez des boutons 
+			html.P('''Nous avons ajouté à la fin de chacun des trois parties des analyses détaillés pour les personnes désirant aller plus loin. Vous trouverez des boutons 
 				similaires à celui ci-dessous à la fin de chacune des trois parties.'''),
 	        dbc.Button(
 	            "Cliquez ici pour continuer l'analyse",
@@ -473,7 +474,7 @@ app.layout = dbc.Container([
 		html.Hr(),
 		dcc.Markdown('''
 			Notre entreprise d’électronique vend __19 produits__ différents regroupés en __5 catégories__. On compte dans les produits vendus 2 ordinateurs, 7 accessoires,
-			3 téléphones, 4 écrans et 2 machines à laver. Pour plus d'information sur les produits vendus veuillez vous referez au diagramme ci-dessous.
+			3 téléphones, 4 écrans et 2 machines à laver. Pour plus d'information sur les produits vendus veuillez vous référer au diagramme ci-dessous.
 		'''),
 		# 5 catégories de 19 produits
 		dbc.Card(
@@ -487,8 +488,8 @@ app.layout = dbc.Container([
 		className='border-0'),
 		# Quels sont les produits phares?				
 		dcc.Markdown('''
-			Après avoir pris connaissances des differents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
-			En regardant le diagramme en barres ci-dessous on constate que le macbook pro represente le plus gros chiffre de ventes.
+			Après avoir pris connaissances des différents produits, nous pouvons analyser les ventes pour __déterminer ceux qui se sont les mieux vendus en 2019__. 
+			En regardant le diagramme en barres ci-dessous on constate que le macbook pro représente le plus gros chiffre de ventes.
 		''', className='mt-2'), 
 		dbc.Row(html.H1("Quels sont les produits phares?"), justify="center", className='mb-2'),
 		dbc.Row([
@@ -525,7 +526,7 @@ app.layout = dbc.Container([
 		# PARTIE 1 DETAILÉ : stratégie produit
 		dbc.Alert(
 			[
-				dcc.Markdown('''Dans cette première partie d'approfondisement, __nous mettrons en place une stratègie produits__ construite 
+				dcc.Markdown('''Dans cette première partie d'd'approfondissement, __nous mettrons en place une stratégie produits__ construite 
 					à l'aide de l'analyse de données'''),
 				dbc.Button("Cliquez ici pour continuer l'analyse",
 					id="collapse_button_1",
@@ -543,28 +544,28 @@ app.layout = dbc.Container([
   	        	dcc.Graph(figure=scatter_plot_product, config=config_dash),
               dbc.Row(dbc.Alert('''Figure 3: volume de ventes des produits selon leur prix.''', color="light", className="mb-0"), justify="center"),
 							dcc.Markdown('''
-                Chaque couleur est rataché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
-                Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, decrivent un nombre de 
-                ventes élevées. Les machines à lavés, au contraire, sont representés par des bulles rouges de petites superficies ce qui signifie 
+                Chaque couleur est rattaché à une catégorie. Quant à la grandeur des bulles, elle dépends du nombre de ventes en 2019. 
+                Par exemple les bulles jaunes font parties de la catégorie des accessoires, leur surface, plutôt étendus, décrivent un nombre de 
+                ventes élevées. Les machines à lavés, au contraire, sont représentés par des bulles rouges de petites superficies ce qui signifie 
                 que le nombre de ventes de ces produits est minces''', className="mt-0"),
               dcc.Markdown('''
 								Le graphique ci-dessus permet de mettre en évidence __trois points fondamentaux pour booster les ventes des années 
 								à venir__:
 
 								1. __Proposer davantage de produits haut de gamme__. On constate que le macbook pro est le seul ordinateur haut de gamme 
-								proposé. Le Chiffre d'Affaires pourait augmenter en offrant d'autres offres d'ordinateurs haut de gammes. 
-								La même logique est appliquable pour les télephones.
+								proposé. Le chiffre d'affaires pourrait augmenter en offrant d'autres offres d'ordinateurs haut de gammes. 
+								La même logique est applicable pour les téléphones.
 
 								2. __Stopper la vente de machines à laver__. Cette catégorie rapporte peut à notre entreprise. Il s'agit de produits 
-								encombrant et lourd, leur frais de livraison est élevés. Il est preferable de focaliser nos efforts dans d'autres catégories.
+								encombrant et lourd, leur frais de livraison est élevés. Il est préférable de focaliser nos efforts dans d'autres catégories.
 
-								3. __Continuer la vente d'accesoires__. Cette catégorie représentent 75% des produits vendus, voir figure X. D'après la figure X+1,
-								96% des commandes ne contiennent qu'un seul produit. On peut en conclure que les accesoires attirent un grand nombre de clients 
-								sur notre site. __Une stratégie interresante serait de valoriser les produits haut de gamme afin d'insiter les clients à réaliser 
+								3. __Continuer la vente d'accessoires.__ Cette catégorie représentent 75% des produits vendus, voir la figure 4. De plus,
+								96% des commandes ne contiennent qu'un seul produit, figure 5. On peut en conclure que les accessoires attirent un grand nombre de clients 
+								sur notre site. __Une stratégie intéressante serait de valoriser les produits haut de gamme afin d'inciter les clients à réaliser 
 								des achats multiples.__'''),
 							dbc.Row(html.H3("75% des ventes concernent les accessoires"), justify="center"),
 							dcc.Graph(figure=donut, config=config_dash),
-							dbc.Row(dbc.Alert("Figure 4: nombre de ventes des differentes catégories", color="light", className="mt-0"), justify="center"),
+							dbc.Row(dbc.Alert("Figure 4: nombre de ventes des différentes catégories", color="light", className="mt-0"), justify="center"),
 							dbc.Row(html.H3("96% des commandes sont constitués d'un seul produit", className="mb-0"), justify="center"),
         		  dcc.Graph(figure=prod_by_order, config=config_dash),		
 							dbc.Row(dbc.Alert("Figure 5: quantité de commandes suivant le nombre de produits différents achetés", color="light"), justify="center"),		    	        								
@@ -588,14 +589,15 @@ app.layout = dbc.Container([
 		dbc.Row(html.H3("San Francisco est la ville au plus gros volume de ventes", className='mt-5'), justify="center"),
 		dcc.Graph(figure=best_city_plot, config=config_dash),
     dbc.Row(dbc.Alert("""Figure 7: classement des villes selon leur volume de ventes en 2019""", color="light"), justify="center"),
+
 		# PARTIE 2 DETAILÉE : Quel sont les facteurs qui sont font fluctué le volume des ventes
 		dbc.Alert(
 			[
-				dcc.Markdown("""Maintenant que nous savons que San Francisco est la ville la plus prolifique, __il serait interresant d'en comprendre les raisons__.
+				dcc.Markdown("""Maintenant que nous savons que San Francisco est la ville la plus prolifique, __il serait intéressant d'en comprendre les raisons__.
           Dans de nombreux cas, comprendre les facteurs de réussite d'une ville est important pour booster le chiffre d'affaire des années à venir. 
-          Il peut être utile pour cibler de nouveau marcher mais aussi pour corriger notre strategie de ventes dans des villes à faible chiffre d'affaires.
+          Il peut être utile pour cibler de nouveau marcher mais aussi pour corriger notre stratégie de ventes dans des villes à faible chiffre d'affaires.
         """),
-        dcc.Markdown("Dans cette partie d'approfondissement nous analyserons la correlation entre:"),
+        dcc.Markdown("Dans cette partie d'approfondissement nous analyserons la corrélation entre:"),
 				dcc.Markdown("""
 					- le volume des ventes et __le salaire moyen__
 					- le volume des ventes et __le budget publicitaire__"""),
@@ -608,22 +610,28 @@ app.layout = dbc.Container([
         	dbc.Card(
       			[
       				html.H3("Peu de corrélation avec le salaire moyen"),
-      				dcc.Markdown("""On aurait tendance à penser que les appareils électroniques ne sont pas des produits de première nécéssité, 
-                il s'agirait plutôt de biens réservé à une classe sociale avec un minimun de moyen. Puisque le salaire moyen est un bonne indicateur 
-                du niveau de vie on pourait immaginé une forte correlation entre le salire moyen est le volumes de ventes. 
-                __Pourtant en regardant le graph ci-dessous, on remarque que ce n'est pas le cas, le niveau de vie à peut d'influence sur le 
-                volume des ventes__.""") ,
+      				dcc.Markdown("""On aurait tendance à penser que les appareils électroniques ne sont pas des produits de première nécessité, 
+                il s'agirait plutôt de biens réservé à une classe sociale avec un minimum de moyen. Puisque le salaire moyen est un bonne indicateur 
+                du niveau de vie on pourrait imaginer une forte corrélation entre le salaire moyen est le volumes de ventes. 
+                __Pourtant en regardant la figure ci-dessous, on remarque que ce n'est pas le cas__.""") ,
       				dcc.Graph(figure=sales_income, config=config_dash),	
       				dbc.Row(dbc.Alert("Figure 8: volume de ventes des villes selon le salaire moyen", color="light", className="mt-0"), justify="center"),
-              dcc.Markdown("""Par exemple, la ville de Seattle posséde le salaire moyen le plus elevée, 39.3k $, pourtant elle compte parmis les villes avec le 
-                volumes de ventes le plus bas, 2.7 M $"""),
+              dcc.Markdown("""Par exemple, la ville de Seattle avec le salaire moyen le plus élevée de 39.3k $ compte parmis les villes avec le 
+                volumes de ventes le plus bas, 2.7 M $. __On peut en conclure que le salaire moyen est un mauvais indicateur pour évaluer le volume des ventes de 
+                notre entreprise__."""),
       				html.H3("Forte corrélation avec le budget publicitaire", className='mt-2'),
-      				dcc.Markdown("""En s'appuyant sur la figure ci-dessous on constate que le budget aloué à la publicité à beaucoup d'influence sur le volume 
-      					des ventes."""),
+      				dcc.Markdown("""En s'appuyant sur la figure ci-dessous on constate que le budget alloué à la publicité en 2019 par ville
+      					est fortement corrélé au volume des ventes. __En d'autres termes, il semblerait que plus on donne de la visibilité à nos produits plus 
+      					le nombre de ventes est important.__ On note cependant une stagnation lorsque le budget est trop élevé. En effet, il s'agit d'une 
+      					relation logarithmique (et non linéaire) entre les deux paramètres"""),
       				dcc.Graph(figure=sales_ads, config=config_dash),
-      				dbc.Row(dbc.Alert("Figure 9: volume de ventes des villes selon le budget alloué à la publicté", color="light", className="mt-0"), 
-      					justify="center"),
-    					dcc.Markdown("""EXPLIQUER QUE CA DEPENDS DE PLEIN D AUTRES FACTEURS"""),	       				
+      				dbc.Row(dbc.Alert("Figure 9: volume de ventes des villes selon le budget alloué à la publicité", color="light", className="mt-0"), 
+      				justify="center"),
+    				dcc.Markdown("""Pour conclure, __augmenter la visibilité de nos produits à l'aide de campagne de publicité semble être une solution gagnante 
+    					pour booster les ventes__. Il serait intéressant de continuer l'analyse afin d'estimer quel est le budget publicitaire optimal 
+    					pour chacune des villes"""),
+    				dbc.Alert("""Afin de rester concis nous avons seulement étudiés l'influences de deux paramètres dans le volume des ventes.
+    					Dans un cas concret ce genre d'étude est bien plus détaillé.""", color="dark", className="mt-2")	       				
 		    	  ],
             body=True, className='border-0'),
           id="collapse_2"),
@@ -634,39 +642,46 @@ app.layout = dbc.Container([
 	## -----------------------
 		html.H1('3. ANALYSE TEMPORELLE') ,
 		html.Hr(),
-		dcc.Markdown("""La figure ci-dessous souligne la présence d'__un pic des ventes en décembre, pendant la periode des fêtes__. On remarque aussi __deux périodes 
-			creuse__ durant l'année. La première est situé aprés les fêtes de fin d'année. Les gens ont depensés beaucoup durant les fêtes ils économisent pendant les 
-			premiers mois de l'année. La deuxieme est situé pendant la période de vacances scolaire. Durant cet intervalle, la plus part des dépenses sont utilisés 
-			pour les vacances et les frais dans les autres secteurs sont réduits. 
-			"""),
+		dcc.Markdown("""
+		 __Comprendre l'évolution mensuelle du chiffre d'affaire durant l'année 2019 est utile pour une meilleur gestion du stock.__ 
+		 	La figure ci-dessous souligne la présence d'un pic des ventes en décembre. Durant cette période de fêtes, le chiffre 
+			d'affaires atteint un maximum car beaucoup de produits électroniques sont vendus comme cadeau. On remarque aussi deux périodes creuse durant l'année. 
+			La première est situé après les fêtes de fin d'année. En effet, les gens ont tendances à économiser pendant les premiers mois de l'année afin de 
+		 	pallier les dépenses de fin d'années. 
+		 	La deuxième est situé pendant la période de vacances scolaire. Durant cet intervalle, la plus part des dépenses sont utilisés pour les vacances et 
+		 	les frais dans les autres secteurs sont réduits. 
+		"""),
 		dbc.Row(html.H3("Pic de ventes lors des fêtes de fin d'année"), justify='center'),
 	    dcc.Graph(figure=ca_per_month, config=config_dash),
 	    # 
 	    dbc.Row(dbc.Alert("Figure 10: évolution mensuelle du chiffre d'affaires de 2019", color="light", className="mt-0"), 
 	        justify="center"),
-	    		dbc.Alert(
-					[
-						dcc.Markdown("""Dans cette partie d'approfondissement nous verrons __quels sont les meilleurs moments pour afficher la publicité__"""),
-						dbc.Button("Cliquez ici pour continuer l'analyse",
-							id="collapse_button_3",
-							className="mb-2 mt-3",
-							color="info",
-							block=True),
-						dbc.Collapse(
-				        	dbc.Card(
-			        			[
-			      	        		dcc.Markdown("""__Le meilleur moment pour afficher la publicté est à 12h et à 19h__, car nos ventes sont maximales pendant cette 
-			      	        			période"""),
-			      	        		dcc.Graph(figure=sales_per_hour, config=config_dash), 
-			        				dbc.Row(dbc.Alert("Figure 11: somme du nombres de commandes regroupés par heure d'achat", color="light", className="mt-0"), 
-			        					justify="center"),			      	        		     				
-						    	],
-							    body=True, className='border-0'),
-				            id="collapse_3",
-		        		),
-					],
-				color="info",
-				className="mt-4"
+	    dcc.Markdown("Afin d'avoir du stock disponible toute l'année, il faut prévoir un nombre de produit important pour la période de noël"),
+		dbc.Alert(
+			[
+				dcc.Markdown("""Dans cette partie d'approfondissement nous verrons __quels sont les meilleurs moments de la journée pour afficher la publicité__"""),
+				dbc.Button("Cliquez ici pour continuer l'analyse",
+					id="collapse_button_3",
+					className="mb-2 mt-3",
+					color="info",
+					block=True),
+				dbc.Collapse(
+		        	dbc.Card(
+	        			[
+	      	        		dcc.Markdown("""En étudiant l'heure d'achat de nos produit à l'aide de la figure ci-dessous, on constate que nos clients ont tendances 
+	      	        			à passer une commande pendant la pause déjeuner et leur temps libre avant le dîner. __On en déduit que le meilleur moment 
+	      	        			pour afficher afficher de la publicité est à 12h et à 19h__.
+	      	        		"""),
+	      	        		dcc.Graph(figure=sales_per_hour, config=config_dash), 
+	        				dbc.Row(dbc.Alert("Figure 11: somme du nombres de commandes regroupés par heure en 2019", color="light", className="mt-0"), 
+	        					justify="center"),			      	        		     				
+				    	],
+					    body=True, className='border-0'),
+		            id="collapse_3",
+        		),
+			],
+		color="info",
+		className="mt-4"
 		),	
 
 	
