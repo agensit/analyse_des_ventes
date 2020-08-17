@@ -4,11 +4,9 @@ body{
     height: 100vh;
 }
 
- principal container for all display
 
-.main-container{
+.container{
     display: flex;
     flex-direction: column;
     justify-content: center;
-	margin: 0 50rem 0 50rem;;    
 }

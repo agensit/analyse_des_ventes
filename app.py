@@ -117,8 +117,8 @@ product_bar.update_layout(
 		orientation="v",
 		yanchor="bottom", y=0.5,
 		xanchor="right", x=0.93))
-product_bar.update_yaxes(showgrid=False, linecolor='black', linewidth=0.5)
-product_bar.update_xaxes(nticks=5)
+product_bar.update_yaxes(fixedrange=True,showgrid=False, linecolor='black', linewidth=0.5)
+product_bar.update_xaxes(fixedrange=True, nticks=5)
 
 # SCATTER PLOT: volume des ventes des produits selon leurs prix
 df = product_report[['Sales', 'Quantity Ordered']].reset_index()
@@ -144,14 +144,15 @@ scatter_plot_product.add_annotation(x=600, y=4e5, text='Machine à laver', font_
 # DONUT: Analyse du volume de ventes
 labels = categories_list
 colors  = product_report.reset_index(0)['Cat'].apply(lambda x: colors_palette[x])
-donut = go.Figure(go.Pie(labels=labels, values=product_report['Quantity Ordered'], marker_colors= colors,
-                     hovertemplate="<b>%{label}</b><br>"+
-                     "%{percent} des ventes<br>"+
-                     "↳ %{value:.2s} de ventes <extra></extra>",
-                     title = dict(
-                         text=f"<b>{millify(product_report['Quantity Ordered'].sum())}</b><br>Ventes",
-                         font=dict(size=25)),
-                    ))
+donut = go.Figure(go.Pie(
+  labels=labels, 
+  values=product_report['Quantity Ordered'], 
+  marker_colors= colors,
+  hovertemplate="<b>%{label}</b><br>"+ "%{percent} des ventes<br>"+ "↳ %{value:.2s} de ventes <extra></extra>",
+  title = dict(
+    text=f"<b>{millify(product_report['Quantity Ordered'].sum())}</b><br>Ventes",
+    font=dict(size=25)),
+  ))
 donut.update_traces(hole=.4,textinfo='label+percent')
 donut.update_layout(margin = no_margin, showlegend=False)
 
@@ -168,8 +169,8 @@ prod_by_order = go.Figure(go.Bar(
     hovertemplate = '<b>%{y} commandes</b><br> ↳ soit %{customdata} % des ventes<extra></extra>',
 ))
 prod_by_order.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x', margin=no_margin)
-prod_by_order.update_yaxes(showgrid=False,showticklabels=False)
-prod_by_order.update_xaxes(title = 'Nombre de produits achetés par commandes', showgrid=False, linecolor='black', linewidth=0.5)
+prod_by_order.update_yaxes(fixedrange=True, showgrid=False,showticklabels=False)
+prod_by_order.update_xaxes(fixedrange=True, title = 'Nombre de produits achetés par commandes', showgrid=False, linecolor='black', linewidth=0.5)
 
 ## 2. ANALYSE DES LIEUX DE VENTES
 ## -------------------------------
@@ -232,23 +233,9 @@ best_city_plot.update_layout(
 	hoverlabel=dict(
 		bgcolor="white",
 		font_size=12))
-best_city_plot.update_yaxes(title='<b>Volume de ventes</b>, en $', nticks=5)
-best_city_plot.update_xaxes(showgrid=False, linecolor='black', linewidth=0.5)
+best_city_plot.update_yaxes(fixedrange=True, title='<b>Volume de ventes</b>, en $', nticks=5)
+best_city_plot.update_xaxes(fixedrange=True, showgrid=False, linecolor='black', linewidth=0.5)
 best_city_plot.update_traces(marker_color = blue_info_color)
-
-# PIE: San Francisco, New York et Los Angeles représent 53% des ventes
-pie_color = ['grey'] * len(city_sales)
-pie_color[:3] = [blue_info_color] * 3
-city_pie_plot =go.Figure(go.Pie(
-    labels=df['City'],
-    values=df['Sales'],
-))
-city_pie_plot.update_layout(margin=no_margin, showlegend=False)
-city_pie_plot.update_traces(
-    textposition='inside', 
-    textinfo='percent+label',
-    marker=dict(colors=pie_color, line=dict(color='black', width=0.2))
-)
 
 # PARTIE DETAILÉE
 df = pd.read_csv("data/city_info.csv")
@@ -322,31 +309,33 @@ ca_per_month = go.Figure(go.Scatter(
         color=blue_info_color,
         line=dict(width=0.5, color='black'))
 ))
-ca_per_month.update_yaxes(title="<b>Chiffre d'affaires mensuelle</b>, en $", nticks=5)
+ca_per_month.update_yaxes(fixedrange=True, title="<b>Chiffre d'affaires mensuelle</b>, en $", nticks=5)
+ca_per_month.update_xaxes(fixedrange=True)
 ca_per_month.update_layout(hoverlabel=dict(bgcolor="white",font_size=14), hovermode='x unified', margin=no_margin)
 ca_per_month.update_layout(
   hoverlabel=dict(bgcolor="white",font_size=14), 
   hovermode='x unified',
   shapes=[
-          dict(
-              type="rect",
-              xref="x", x0=5, x1=8,
-              yref="paper", y0=0, y1=1,
-              fillcolor="grey",
-              opacity=0.2,
-              layer="below",
-              line_width=0,
-          ),
-            dict(
-              type="rect",
-              xref="x", x0=0, x1=2,
-              yref="paper", y0=0, y1=1,
-              fillcolor="grey",
-              opacity=0.2,
-              layer="below",
-              line_width=0,
-          )
-        ])
+    dict(
+        type="rect",
+        xref="x", x0=5, x1=8,
+        yref="paper", y0=0, y1=1,
+        fillcolor="grey",
+        opacity=0.2,
+        layer="below",
+        line_width=0,
+    ),
+      dict(
+        type="rect",
+        xref="x", x0=0, x1=2,
+        yref="paper", y0=0, y1=1,
+        fillcolor="grey",
+        opacity=0.2,
+        layer="below",
+        line_width=0,
+    )
+  ]
+)
 ca_per_month.add_annotation(x=6.5, y=3.5e6, text='<b>Vacances Scolaires</b><br> Période creuse', font=dict(size=14), showarrow=False)
 ca_per_month.add_annotation(x=1, y=3.5e6, text='<b>Après Fêtes</b><br> Période creuse', font=dict(size=14), showarrow=False)
 ca_per_month.add_annotation(x=11, y=4.6e6, font=dict(size=14), text="Fêtes")
@@ -365,8 +354,8 @@ sales_per_hour = go.Figure(go.Scatter(
         color=blue_info_color,
         )
 ))
-sales_per_hour.update_yaxes(title= '<b>Nombre de commande</b>', nticks=5)
-sales_per_hour.update_xaxes(title= "<b>Heure d'achats</b>", showticklabels=False, showgrid=False, zeroline=False)
+sales_per_hour.update_yaxes(fixedrange=True, title= '<b>Nombre de commande</b>', nticks=5)
+sales_per_hour.update_xaxes(fixedrange=True, title= "<b>Heure d'achats</b>", showticklabels=False, showgrid=False, zeroline=False)
 sales_per_hour.update_layout(
 	hoverlabel=dict(bgcolor="white",font_size=14), 
 	hovermode='x',
@@ -683,11 +672,10 @@ app.layout = dbc.Container([
 		color="info",
 		className="mt-4"
 		),	
-
-	
 	])
 ], 
-# fluid=True
+fluid=True,
+className='container'
 )
 
 '''------------------------------------------------------------------------------------------- 

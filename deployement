@@ -5,7 +5,7 @@ destination='/Users/axel/Agensit/heroku/example_rapport_app'
 
 # copy and past change from covid19's folder to heroku_deployement's folder
 cp -vr $source $destination
-
+rm  '/Users/axel/Agensit/heroku/example_rapport_app/rapport.ipynb'
 # update the code and redeploy
 cd $destination
 date="$(date +'%m/%d/%Y')"
