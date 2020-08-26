@@ -27,7 +27,7 @@ import plotly.io as pio
 pio.templates.default = "plotly_white"
 
 ## DASH
-config_dash = {'displayModeBar': False, 'showAxisDragHandles':False, "responsive":True}  
+config_dash = {'displayModeBar': False, 'showAxisDragHandles':False}  
 margin = dict(l=20, r=20, t=10, b=10)
 # External CSS + Dash Bootstrap components
 external_stylesheets=[dbc.themes.BOOTSTRAP, "assets/main.css"]
@@ -77,8 +77,9 @@ dashboard_date = datetime.date(2019, 5, 23)
    ------------------------------------------------------------------------------------------- 
 '''
 
-# Filters
-# --------------------------
+## 1. CREATION DU HEADER
+# --------------------------------------------------------
+
 metric_dropdown = dcc.Dropdown(
     id='metric_dropwdown',
     options=[
@@ -92,7 +93,7 @@ metric_dropdown = dcc.Dropdown(
 
 months = sales['Date'].dt.month.unique()
 month_option = [{'label':calendar.month_abbr[m], 'value':m}for m in range(1,dashboard_date.month+1)]
-# month_option.append({'label':None, 'value':"Année"})
+# month_option.append({'label':None, 'value':"Année"}) # TODO: ajouter une option "Année"
 date_dropdown = dcc.Dropdown(
     id='date_dropwdown',
     options=month_option,
@@ -101,38 +102,57 @@ date_dropdown = dcc.Dropdown(
     clearable=False
 )
 
-# KPI
-# --------------------------
-progress_kpi = dbc.Card([
-        dcc.Graph(id='progress_pie', config=config_dash)
-    ],
-)
+header = dbc.Card([
+    dbc.Row(html.H1("Centre de Commande"), className='ml-2 mt-1'),
+    html.Hr(className="mt-1 mb-0"),
+    dbc.Row(
+        [
+            dbc.Col(metric_dropdown, className="ml-2", lg=2, xs=4),
+            dbc.Col(date_dropdown, lg=2, xs=4)
+        ],
+        justify="start",
+        className="mt-2 mb-2"
+    )
+])
 
-card_sum_kpi = dbc.Card(
-    children = [
-        # html.H5("Objectif",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='card_sum', config=config_dash)
-    ],
-)
-
-
-#  FIGURES
+# 2. Colonne de Gauche
 # --------------------------------------------------------
-# city sales
-city_sales = dbc.Card(
+
+progress_bar = dcc.Graph(id='progress_pie', config=config_dash, style={'height':'100%'})
+summary = dcc.Graph(id='card_sum', config=config_dash, style={'height':'100%'})
+monthly_sales = dcc.Graph(id='monthly_sales', config=config_dash, style={'width':'100%','height':'100%'}, className="border")
+
+left_block = dbc.Col(
     children = [
-        html.H5("Evolution des ventes par ville",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='city_sales', config=config_dash)
-    ]
+        dbc.Row(
+            children = [
+                dbc.Col(progress_bar, className="border mr-3 mt-3", style={"background-color": "white"}), 
+                dbc.Col(summary, className="border mt-3", style={"background-color": "white"})
+            ], 
+            style = {"height": "40%"}),
+        dbc.Row(monthly_sales, style={"height": "58%"}, className="mt-3")
+    ],
+    lg = 8,
+    xs=12,
+    className="mr-3",
+    )
+
+#  3. Colonne de droite
+# --------------------------------------------------------
+city_sales = dcc.Graph(
+    id='city_sales', 
+    config=config_dash, 
+    style={'height':'100%', 'width':'100%'}
 )
 
-# monthly sales
-monthly_sales = dbc.Card(
-    children = [
-        html.H5("Evolution des ventes par mois",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='monthly_sales', config=config_dash)
-    ]
+right_block = dbc.Col(
+    city_sales, 
+    style={"background-color": "white"}, 
+    className=" mt-3 border"
 )
+    
+                
+
 
 '''------------------------------------------------------------------------------------------- 
                                             LAYOUT
@@ -140,36 +160,18 @@ monthly_sales = dbc.Card(
 '''
 app.layout = html.Div(
     [
-        # header and filters
-        dbc.Card(
-            [
-                dbc.Row(html.H1("Centre de Commande"), className='ml-2 mt-1'),
-                html.Hr(className="mt-2 mb-0"),
-                dbc.Row(
-                    [
-                        dbc.Col(metric_dropdown, className="ml-2", width=2),
-                        dbc.Col(date_dropdown, width=2)
-                    ],
-                    justify="start",
-                    className="mt-2 mb-2"
-                )
-            ],
-            # className="h-25"
-        ), 
-        # vizu
+        header,
         dbc.Row(
             [
-                dbc.Col(progress_kpi, width=4, style={"height": "100%", "background-color": "red"}),
-                dbc.Col(card_sum_kpi, width=4, style={"height": "100%", "background-color": "green"}),
-                dbc.Col(city_sales, width=4, style={"height": "100%", "background-color": "cyan"})
+                left_block,
+                right_block
             ],
-            className="h-25 mt-3 mb-3 ml-3 mr-3"
-        ),
-        dbc.Row(dbc.Col(monthly_sales), className="mt-3 mb-3 ml-3 mr-3"),
+            style={"height": "80vh"},
+            className="mr-3 ml-3"
+        )
     ],
     style={"height": "100vh"},
 )
-
 '''------------------------------------------------------------------------------------------- 
                                             INTERACT
    ------------------------------------------------------------------------------------------- 
@@ -217,16 +219,16 @@ def global_update(metric, month):
             dict(
                 x=0.5,
                 y=0.40,
-                text="Objectif de Mars",
+                text="Objectif pour Mars",
                 showarrow=False,
                 font=dict(
-                    size=30,
+                    size=20,
                     color="#000000"
                 )
             ),
             dict(
                 x=0.5,
-                y=0.55,
+                y=0.60,
                 text='{}%'.format(int(progress*100)),
                 showarrow=False,
                 font=dict(
@@ -255,11 +257,11 @@ def global_update(metric, month):
         annotations = [
             dict(
                 x = 0.5,
-                y = 0.45,
+                y = 0.40,
                 text = "Chiffre d'Affaires ($)" if metric=="sales_2020" else "Bénéfices",
                 showarrow = False,
                 font = dict(
-                    size = 30,
+                    size = 25,
                     color = "#000000"
                 )
             ),
@@ -275,12 +277,12 @@ def global_update(metric, month):
             ),
             dict(
                 x = 0.5,
-                y = 0.35,
+                y = 0.20,
                 text = text_score,
                 showarrow = False,
                 # bgcolor=green,
                 font = dict(
-                    size = 30,
+                    size = 23,
                     color = color
                 )
             )
@@ -294,7 +296,7 @@ def global_update(metric, month):
     # plot
     city_plot = go.Figure([
         go.Bar(
-            name = 'target', 
+            name = 'Objectif', 
             y = city_sales.index, 
             x = city_sales[target], 
             marker_color=grey,
@@ -303,7 +305,7 @@ def global_update(metric, month):
             opacity=target_opacity
         ),
         go.Bar(
-            name = metric, 
+            name = "Chiffre d'affaires" if metric=="sales_2020" else "Bénéfices", 
             y = city_sales.index, 
             x = city_sales[metric],
             text = percents,
@@ -313,10 +315,16 @@ def global_update(metric, month):
         )
     ])
     # update
-    city_plot.update_traces(texttemplate='%{text:.0%}', textposition='inside', selector=dict(name=metric))
-    city_plot.update_traces(orientation='h')
-    city_plot.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', barmode='overlay', margin = margin, showlegend=False)
-    city_plot.update_xaxes(nticks=5, linecolor='lightgrey', zeroline=True)
+    city_plot.update_traces(texttemplate='%{text:.0%}', textposition='inside', selector=dict(marker_line_width=0))
+    city_plot.update_traces(orientation='h', hovertemplate="%{x:.2s} $",)
+    city_plot.update_layout(
+        hovermode="y unified",
+        uniformtext_minsize=8, 
+        uniformtext_mode='hide', 
+        barmode='overlay', 
+        margin = margin, 
+        showlegend=False)
+    city_plot.update_xaxes(nticks=5)
     city_plot.update_yaxes(linewidth=0.5, linecolor='black', zeroline=True)
 
     #  MONTH SALES
@@ -327,7 +335,7 @@ def global_update(metric, month):
     # plot
     monthly_plot = go.Figure([
         go.Bar(
-            name = 'target', 
+            name = 'Objectif', 
             x = monthly_sales.index, 
             y = monthly_sales[target], 
             marker_color=grey,
@@ -336,7 +344,7 @@ def global_update(metric, month):
             opacity=target_opacity
         ),
         go.Bar(
-            name = metric, 
+            name = "Chiffre d'affaires" if metric=="sales_2020" else "Bénéfices", 
             x = monthly_sales.index, 
             y = monthly_sales[metric],
             text = percents,
@@ -345,10 +353,22 @@ def global_update(metric, month):
             marker_line_width=0,
         )
     ])
-    monthly_plot.update_traces(texttemplate='%{text:.0%}', textposition='auto', selector=dict(name=metric))
-    monthly_plot.update_layout(uniformtext_minsize=8, uniformtext_mode='hide', barmode='overlay', margin =margin)
-    monthly_plot.update_xaxes(nticks=12, linecolor='black', zeroline=True)
-    monthly_plot.update_yaxes(nticks=6)
+    monthly_plot.update_traces(texttemplate='%{text:.0%}', textposition='auto', selector=dict(marker_line_width=0))
+    monthly_plot.update_traces(hovertemplate="%{y:.2s} $")
+    monthly_plot.update_layout(
+        hovermode="x unified",
+        uniformtext_minsize=8, 
+        uniformtext_mode='hide', 
+        barmode='overlay', 
+        showlegend=False,
+        margin =margin)
+    monthly_plot.update_xaxes(
+        nticks=12, 
+        linecolor='black', 
+        zeroline=True,
+        ticktext=[datetime.datetime.strftime(date, "%b") for date in monthly_sales.index],
+        tickvals=monthly_sales.index)
+    monthly_plot.update_yaxes(nticks=6)    
 
     # OUTPUT
     # --------------------------------------------------------

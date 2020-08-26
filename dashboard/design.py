@@ -101,38 +101,6 @@ date_dropdown = dcc.Dropdown(
     clearable=False
 )
 
-# KPI
-# --------------------------
-progress_kpi = dbc.Card([
-        dcc.Graph(id='progress_pie', config=config_dash)
-    ],
-)
-
-card_sum_kpi = dbc.Card(
-    children = [
-        # html.H5("Objectif",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='card_sum', config=config_dash)
-    ],
-)
-
-
-#  FIGURES
-# --------------------------------------------------------
-# city sales
-city_sales = dbc.Card(
-    children = [
-        html.H5("Evolution des ventes par ville",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='city_sales', config=config_dash)
-    ]
-)
-
-# monthly sales
-monthly_sales = dbc.Card(
-    children = [
-        html.H5("Evolution des ventes par mois",className="mt-2 ml-2 mb-0"),
-        dcc.Graph(id='monthly_sales', config=config_dash)
-    ]
-)
 
 '''------------------------------------------------------------------------------------------- 
                                             LAYOUT
@@ -154,11 +122,12 @@ app.layout = html.Div(
                     className="mt-2 mb-2"
                 )
             ],
-            style={"height": "13vh", "background-color": "blue"},
+            # style={"height": "15vh", "background-color": "blue"},
         ), 
         # vizu
         dbc.Row(
             [
+            	# colonne de gauche
                 dbc.Col(
                     [
                         dbc.Row(
@@ -166,41 +135,34 @@ app.layout = html.Div(
                                 dbc.Col(
                                     html.P("kpi 1"), 
                                     style={"background-color": "red"},
+                                    className="mr-3"
                                 ),
                                 dbc.Col(
                                     html.P("kpi 2"), 
-                                    style={"background-color": "green"}
+                                    style={"background-color": "green"},
+                                    
                                 )
                             ],
-                            style={"height": "40%"},
-                            className="mb-3"
+                            style={"height": "30%"},
                         ),
                         dbc.Row(
                             html.P("bilan mensuelle"),
-                            style={"height": "60%", "background-color": "yellow"}
+                            style={"height": "58%", "background-color": "yellow"},
+                            className="mt-3"
                         )
                     ],
-                    style={"height": "100%"},
                     width = 8,
-                    # className="ml-3"
+                    className="mr-3"
                 ),
+                # colonne de droite
                 dbc.Col(
                     html.P("bilan par ville"), 
-                    style={"height": "100%", "background-color": "grey"},
+                    style={"background-color": "grey"},
                 )
             ],
             style={"height": "83vh"},
             className="mr-3 ml-3 mt-3"
         )
-        # dbc.Row(
-        #     [
-        #         dbc.Col(html.P("w"), width=4, style={"height": "100%", "background-color": "red"}),
-        #         dbc.Col(html.P("w"), width=4, style={"height": "100%", "background-color": "green"}),
-        #         dbc.Col(html.P("w"), width=4, style={"height": "100%", "background-color": "cyan"})
-        #     ],
-        #     className="mt-3 mb-3 ml-3 mr-3"
-        # ),
-        # dbc.Row(html.P("w"), className="mt-3 mb-3 ml-3 mr-3", style={"height": "100%", "background-color": "black"}),
     ],
     style={"height": "100vh"},
 )
