@@ -391,7 +391,7 @@ sales_per_hour.add_annotation(x=19, y=14470, text='<b>19h</b>, temps libre', fon
 app.layout = dbc.Container([
 	html.Div(children=[
 		dcc.Markdown('''
-			# Analyse des ventes d'une entreprise en ligne d'électronique 
+			# Analyse des ventes d'une entreprise en ligne d'électronique
 			---
 		'''),
 		dbc.Alert([

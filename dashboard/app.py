@@ -111,7 +111,8 @@ header = dbc.Card([
             dbc.Col(date_dropdown, lg=2, xs=4)
         ],
         justify="start",
-        className="mt-2 mb-2"
+        className="mt-2 mb-2",
+        style={"height": "20%"},
     )
 ])
 
@@ -166,7 +167,7 @@ app.layout = html.Div(
                 left_block,
                 right_block
             ],
-            style={"height": "80vh"},
+            style={"height": "80%"},
             className="mr-3 ml-3"
         )
     ],
