@@ -123,7 +123,7 @@ card = html.Div(
 		dbc.Row(
 			[
 			dbc.Col(html.H1("Title"), width=4, className="ml-2", style={"background-color": "green"}),
-			dbc.Col(tooltip_info, width=1, style={"background-color": "yellow"})
+			dbc.Col(tooltip_info, width=1, style={"background-color": "yellow", "float":"right"})
 			],
 			justify="between",
 			style={"background-color": "red"}

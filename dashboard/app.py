@@ -77,6 +77,102 @@ dashboard_date = datetime.date(2019, 5, 23)
    ------------------------------------------------------------------------------------------- 
 '''
 
+# ## 1. CREATION DU HEADER
+# # --------------------------------------------------------
+
+# metric_dropdown = dcc.Dropdown(
+#     id='metric_dropwdown',
+#     options=[
+#         {'label': "Chiffre d'affaire", 'value': 'sales_2020'},
+#         {'label': "Bénéfices", 'value': 'profit_2020'},
+#     ],
+#     value='sales_2020',
+#     searchable=False,
+#     clearable=False
+# )
+
+# months = sales['Date'].dt.month.unique()
+# month_option = [{'label':calendar.month_abbr[m], 'value':m}for m in range(1,dashboard_date.month+1)]
+# # month_option.append({'label':None, 'value':"Année"}) # TODO: ajouter une option "Année"
+# date_dropdown = dcc.Dropdown(
+#     id='date_dropwdown',
+#     options=month_option,
+#     value=dashboard_date.month,
+#     searchable=False,
+#     clearable=False
+# )
+
+# header = dbc.Card([
+#     dbc.Row(html.H1("Centre de Commande"), className='ml-2 mt-1'),
+#     html.Hr(className="mt-1 mb-0"),
+#     dbc.Row(
+#         [
+#             dbc.Col(metric_dropdown, className="ml-2", lg=2, xs=4),
+#             dbc.Col(date_dropdown, lg=2, xs=4)
+#         ],
+#         justify="start",
+#         className="mt-2 mb-2",
+#         style={"height": "20%"},
+#     )
+# ])
+
+# # 2. Colonne de Gauche
+# # --------------------------------------------------------
+
+# progress_bar = dcc.Graph(id='progress_pie', config=config_dash, style={'height':'100%'})
+# summary = dcc.Graph(id='card_sum', config=config_dash, style={'height':'100%'})
+# monthly_sales = dcc.Graph(id='monthly_sales', config=config_dash, style={'width':'100%','height':'100%'}, className="border")
+
+# left_block = dbc.Col(
+#     children = [
+#         dbc.Row(
+#             children = [
+#                 dbc.Col(progress_bar, className="border mr-3 mt-3", style={"background-color": "white"}), 
+#                 dbc.Col(summary, className="border mt-3", style={"background-color": "white"})
+#             ], 
+#             style = {"height": "40%"}),
+#         dbc.Row(monthly_sales, style={"height": "58%"}, className="mt-3")
+#     ],
+#     lg = 8,
+#     xs=12,
+#     className="mr-3",
+#     )
+
+# #  3. Colonne de droite
+# # --------------------------------------------------------
+# city_sales = dcc.Graph(
+#     id='city_sales', 
+#     config=config_dash, 
+#     style={'height':'100%', 'width':'100%'}
+# )
+
+# right_block = dbc.Col(
+#     city_sales, 
+#     style={"background-color": "white"}, 
+#     className=" mt-3 border"
+# )
+    
+                
+
+
+# '''------------------------------------------------------------------------------------------- 
+#                                             LAYOUT
+#    ------------------------------------------------------------------------------------------- 
+# '''
+# app.layout = html.Div(
+#     [
+#         header,
+#         dbc.Row(
+#             [
+#                 left_block,
+#                 right_block
+#             ],
+#             style={"height": "80%"},
+#             className="mr-3 ml-3"
+#         )
+#     ],
+#     style={"height": "100vh"},
+# )
 ## 1. CREATION DU HEADER
 # --------------------------------------------------------
 
@@ -88,7 +184,9 @@ metric_dropdown = dcc.Dropdown(
     ],
     value='sales_2020',
     searchable=False,
-    clearable=False
+    clearable=False,
+    style={"border": "none"},
+    className="metric_dropdown"
 )
 
 months = sales['Date'].dt.month.unique()
@@ -99,7 +197,9 @@ date_dropdown = dcc.Dropdown(
     options=month_option,
     value=dashboard_date.month,
     searchable=False,
-    clearable=False
+    clearable=False,
+    style={"border": "none"},
+    className="months_dropdown"
 )
 
 header = dbc.Card([
@@ -111,31 +211,31 @@ header = dbc.Card([
             dbc.Col(date_dropdown, lg=2, xs=4)
         ],
         justify="start",
-        className="mt-2 mb-2",
-        style={"height": "20%"},
+        className="mt-2 mb-2"
     )
 ])
 
 # 2. Colonne de Gauche
 # --------------------------------------------------------
 
-progress_bar = dcc.Graph(id='progress_pie', config=config_dash, style={'height':'100%'})
-summary = dcc.Graph(id='card_sum', config=config_dash, style={'height':'100%'})
-monthly_sales = dcc.Graph(id='monthly_sales', config=config_dash, style={'width':'100%','height':'100%'}, className="border")
+progress_bar = dcc.Graph(id='progress_pie', className="progress_pie", config=config_dash, style={'height':'100%','width':'100%'})
+summary = dcc.Graph(id='card_sum', className="card_sum" ,config=config_dash, style={'height':'100%','width':'100%'})
+monthly_sales = dcc.Graph(id='monthly_sales', config=config_dash, style={'width':'100%','height':'45vh'}, className="border")
 
 left_block = dbc.Col(
-    children = [
-        dbc.Row(
+        dbc.Container(
+            children=[
+            dbc.Row(
             children = [
-                dbc.Col(progress_bar, className="border mr-3 mt-3", style={"background-color": "white"}), 
-                dbc.Col(summary, className="border mt-3", style={"background-color": "white"})
-            ], 
-            style = {"height": "40%"}),
-        dbc.Row(monthly_sales, style={"height": "58%"}, className="mt-3")
-    ],
-    lg = 8,
+                dbc.Col(progress_bar, className="border progress_bar mr-3 mt-3 ", style={"background-color": "white"},xs=12,md=6), 
+                dbc.Col(summary, className="border summary mt-3", style={"background-color": "white"}),
+                
+            ],className="left-block--indicators"),
+            dbc.Row(monthly_sales, style={"height": "58%"}, className="monthly_sales mt-3 ")
+            ],fluid=True, className="p-0 m-0 h-100"),
+    lg=8,
     xs=12,
-    className="mr-3",
+    className="mr-3 mb-3",
     )
 
 #  3. Colonne de droite
@@ -149,7 +249,7 @@ city_sales = dcc.Graph(
 right_block = dbc.Col(
     city_sales, 
     style={"background-color": "white"}, 
-    className=" mt-3 border"
+    className=" mt-3 mb-3 border",
 )
     
                 
@@ -161,17 +261,19 @@ right_block = dbc.Col(
 '''
 app.layout = html.Div(
     [
-        header,
+    header,
+    dbc.Container(
+        [
         dbc.Row(
-            [
-                left_block,
-                right_block
-            ],
-            style={"height": "80%"},
-            className="mr-3 ml-3"
-        )
+                [
+                    left_block,
+                    right_block
+                ],
+                className="mr-3 ml-3 p-0"
+            )
+        ],fluid=True, className="p-0 mb-3"),
     ],
-    style={"height": "100vh"},
+    style={"height": "100%"}   
 )
 '''------------------------------------------------------------------------------------------- 
                                             INTERACT
@@ -220,10 +322,10 @@ def global_update(metric, month):
             dict(
                 x=0.5,
                 y=0.40,
-                text="Objectif pour Mars",
+                text=f'Objectif pour {calendar.month_name[month]}',
                 showarrow=False,
                 font=dict(
-                    size=20,
+                    size=25,
                     color="#000000"
                 )
             ),
