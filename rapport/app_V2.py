@@ -54,7 +54,7 @@ blue_info_color = '#16a2b8'
 custom_blue = "rgba(33, 158, 188, 1)"
 custom_orange = "rgba(244, 140, 6, 1)" 
 # style for figure title and subtitle
-font_title = dict(family="Verdana", size=25, color="#495057")
+font_title = dict(family="Verdana", size=24, color="#495057")
 
 ## READ BIG NUMBER
 def millify(n):
@@ -104,8 +104,13 @@ parcats.update_layout(
     margin=dict(l=45, r=80, t=75, b=20),
     title = dict(
 		text="""5 catégories de 19 produits
-		<br><span style="color:#6c757d; font-size:1rem;">avec les produits classés par prix décroissant</span></span>""" , 
+		 <br><span style="color:#6c757d; font-size:1.17rem;">avec les produits classés par prix décroissant</span>""" , 
 		x=0,
+		y=0.96,
+		xanchor="left",
+		yanchor="auto",
+		xref="container",
+		yref="container",
 		font=font_title))
 
 ## Figure 2 (horizontal bar): Classement des produits
@@ -132,9 +137,15 @@ product_bar.update_layout(
 	margin = dict(t=125, b=0, pad=10),
 	title = dict(
 		text="""Classement des produits
-		<br><span style="color:#6c757d;font-size:1rem;">selon leur importance pour le chiffre d'affaire</span>""",
+		<br><span style="color:#6c757d;font-size:1.17rem;">selon leur importance pour le chiffre d'affaire</span>""",
 		x=0,
+		y=0.96,
+		xanchor="left",
+		yanchor="auto",
+		xref="container",
+		yref="container",
 		font=font_title))
+
 product_bar.update_xaxes(showgrid=False, showticklabels=False, zeroline=False, showline=False)
 product_bar.update_yaxes(showgrid=False, showline=False)
 product_bar.update_traces(showlegend=False, orientation='h')
@@ -190,8 +201,13 @@ scatter_plot_product.update_layout(
 	margin = dict(l=0, r=0, t=75, b=0),
 	title =dict(
         text="""Volume de ventes des produits selon leur prix
-			<br><span style="color:#6c757d;font-size:1rem;">la superficie des bulles correspond au nombre de ventes</span>""",
+			<br><span style="color:#6c757d;font-size:1.17rem;">la superficie des bulles correspond au nombre de ventes</span>""",
         x=0, 
+		y=0.96,
+		xanchor="left",
+		yanchor="auto",
+		xref="container",
+		yref="container",
         font=font_title))
 scatter_plot_product.update_xaxes(
 	title=dict(text='Prix des produits ($)', font=dict(color="grey",size=12)),
