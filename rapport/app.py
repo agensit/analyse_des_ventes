@@ -543,12 +543,12 @@ app.layout = dbc.Container([
         dcc.Markdown('''
 			Dans les sections suivantes, nous allons transformer cette masse de données en un ensemble d’informations pertinentes. 
 			Elles seront ensuite couplées à des éléments provenant de l'écosystème de l'entreprise afin d’élaborer des choix stratégiques 
-			réfléchis. La suite du présent rapport elle se divise en trois parties :  
+			réfléchis. La suite du présent rapport se divise en trois parties :  
 			
 			1. **Positionnement de l'entreprise**, nous analyserons les ventes de produits afin d'améliorer le positionnement de l'entreprise  
 			2. **Ciblage marketing**, nous analyserons les lieux de ventes afin d'améliorer la stratégie marketing de l'entreprise  
 			3. **Saisonnalité et horaires**, nous analyserons les tendances d'achat des clients afin d'y déterminer les périodes creuses et les 
-			périodes pleines'''),
+			périodes de forte affluence'''),
 
 		## 1. POSITIONNEMENT DE L'ENTREPRISE
 		dcc.Markdown('''
@@ -587,8 +587,8 @@ app.layout = dbc.Container([
 		dcc.Graph(figure=product_bar, config=config_dash),
 		dcc.Markdown("**Figure 2**: Classement des produits", className="text-muted"),
 		dcc.Markdown("""
-			On remarque une forte variation de l’importance de certaines marchandises pour le chiffre d’affaires. En effet, les produits *high priced*
-			constituent une part plus importante que les produits d’entrée de gamme qui n’ont que très peu d’impact sur le CA.
+			On remarque une forte variation de l’importance de certaines marchandises sur le chiffre d’affaires. En effet, les produits *high priced*
+			occupent une part plus importante que les produits d’entrée de gamme qui n’ont que très peu d’impact sur le CA.
 
 			Continuons notre analyse en examinant la corrélation entre le prix de vente d'un produit et son chiffre d’affaires en 2019. (Voir la figure 3)""",
 			className="my-5"),
@@ -607,14 +607,14 @@ app.layout = dbc.Container([
 			leur intérêt pour le catalogue 2020 est discutable. 
 
 			- **Les produits hauts de gamme sont en minorité**. On ne compte qu’un seul produit haut de gamme dans la catégorie des ordinateurs et aucun dans 
-			la catégorie des téléphones, deux catégories qui sont pourtant extrêmement importantes pour le chiffre d’affaires. Il serait peut-être intéressant 
+			la catégorie des téléphones, deux catégories qui sont pourtant extrêmement importantes pour le chiffre d’affaires. Il serait intéressant 
 			de diversifier ce genre de produits. Nous aborderons cet aspect de notre rapport dans l’une des sections suivantes.
 
-			- **L’aspect des bulles varie en fonction du nombre de ventes**. Car les accessoires low cost sont des produits au nombre de ventes élevé, leurs 
+			- **L’aspect des bulles varie en fonction du nombre de ventes**. Les accessoires low cost sont des produits au nombre de ventes élevé, leurs 
 			bulles sont étendues, tandis que les produits  ont une superficie de bulles moindre, leur nombre de ventes étant plus bas. Le nombre de ventes est 
 			un paramètre intéressant parce qu’il nous permet d'évaluer le temps alloué à la préparation des commandes de chaque produit.
 
-			D’ailleurs, comparons le nombre de ventes et l’influence sur le chiffre d’affaires pour les produits low cost et *high priced*. 
+			Comparons le nombre de ventes et l’influence sur le chiffre d’affaires pour les produits low cost et *high priced*. 
 			(Voir la figure 4)''',
 			className="my-5"),
 
@@ -642,7 +642,7 @@ app.layout = dbc.Container([
 			produits représentent un temps de travail considérable en termes de préparation de commandes, mais ne génèrent que peu de bénéfices. Leur 
 			renouvellement dans le catalogue de 2020 est discutable. 
 
-			Néanmoins, avant de tirer des conclusions, il est important de vérifier la proportion de commandes composées de plus de deux produits. En effet, 
+			Néanmoins, il est important de vérifier la proportion de commandes composées de plus de deux produits. En effet, 
 			si le nombre de produits achetés par commande est élevé, il est probable qu’une partie des clients venus acheter un accessoire finissent 
 			par repartir avec d’autres produits. Dans ce cas, arrêter la vente d'accessoires low-cost en 2020 pourrait impacter les ventes des autres 
 			catégories. **Pour cette étude seulement 2.7% des commandes sont composées de plusieurs produits dont au moins un acccessoire. Ainsi
@@ -706,7 +706,7 @@ app.layout = dbc.Container([
 		dcc.Markdown('''
 			#### **Qu’est ce qui fait de San Francisco une ville aussi performante ?**
 
-			Nous pouvons nous faire une idée des facteurs de réussite d’une ville en s’appuyant sur la corrélation entre notre indicateur de performance 
+			Nous pouvons nous faire une idée des facteurs de réussite d’une ville en nous appuyant sur la corrélation entre notre indicateur de performance 
 			(le chiffre d’affaires annuel par ville) et des facteurs externes tels que le nombre d’habitants ou le taux de travailleurs dans le secteur 
 			de la technologie. 
 
@@ -785,8 +785,8 @@ app.layout = dbc.Container([
 				### Recommandation stratégique
 				---
 				- **Augmenter les stocks pour Noël**, afin d'éviter l'indisponibilité de certains produits.
-				- **Favoriser l’affichage de la publicité pour midi et 19h** (un affichage personnalisé peut être réalisé pour chaque ville et 
-				nécessite une investigation au cas par cas).'''),
+				- **Favoriser l’affichage de la publicité pour midi et 19h**, un affichage personnalisé peut être réalisé pour chaque ville et 
+				nécessite une investigation au cas par cas.'''),
 			color='secondary', className="my-5"),
 	])
 ], fluid=True, className='container', style={"background-color":"white"})
