@@ -11,7 +11,8 @@ import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Output, Input
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+external_stylesheets=[dbc.themes.BOOTSTRAP, "assets/test.css"]
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
 
 
@@ -37,49 +38,75 @@ class Card:
     -------------------------------------------------------
     create a card object which could be use in the dashboard
 """
-    def __init__(self, title, graph, tooltip=None, dash_config={'displayModeBar': False, 'showAxisDragHandles':False, 'responsive':True}):
-        self.title = html.H2(title)
+# ------------
+##  Attributes
+# ------------
+    def __init__(self, graph, title=None, tooltip=None, dash_config={'displayModeBar': False, 'showAxisDragHandles':False, 'responsive':True}):
+        # header
+        self.header = []
+        self.title = title
+        self.tooltip = self.create_tooltip(tooltip) if tooltip else None
+
+        #  graph
         self.graph = dcc.Graph(figure=graph, config=dash_config, style={"width":"100%"})
+
+        # format
         self.width = True # default
         self.row_number = None
 
-        if tooltip :
-            self.tooltip = self.create_tooltip(tooltip) 
-        else :
-            self.tooltip = None
+# ------------
+##  Methods
+# ------------
+
+    # create the header
+    # ____________________________________________________________
+    def add_title(self):
+        self.header.append(dbc.Col(html.H4(self.title), width="auto", className="border ml-4 my-1", align="center"))
 
     def create_tooltip(self, tooltip):
+        return [
+            dbc.Button(
+                "?", 
+                className="border rounded-circle", 
+                id=f"tooltip-target_{self.title}", 
+                size="sm",
+                style={"float":"right", "background-color": "white", "color":"grey"},
+                ),
+            dbc.Tooltip(tooltip, target=f"tooltip-target_{self.title}", placement="left")
+        ]
+
+    def add_info(self):
+        self.header.append(dbc.Col(self.tooltip, align="center",  width="auto", className="border mr-4")) 
+
+    def add_zoom(self):
+        # self.header.append()
+    
+    def create_header(self):
+        if self.title: 
+            self.add_title()
+        if self.tooltip:
+            self.add_info()
+        return dbc.Row(self.header, justify="between")
+
+    # create the card 
+    # ____________________________________________________________
+    def create_card(self):
         return html.Div(
             [
-                dbc.Button("?", 
-                	# outline=True, 
-                	className="border rounded-circle mr-2 mt-1", 
-                	id=f"tooltip-target_{self.title.children}", 
-                	color="light",
-                	style={"float":"right", "background-color": "white"},
-                	),
-                dbc.Tooltip(tooltip, target=f"tooltip-target_{self.title.children}", placement="left")
+                self.create_header(),
+                dbc.Row(self.graph, className="border m-2")
             ],
+            className="border m-2",
+            style={"background-color": "white"}
         )
 
-    def format(self, row_number, width=12):
+    # position of the card
+    # ____________________________________________________________
+    def format(self, row_number=1, width=12):
         self.row_number = row_number
         self.width = width
 
-    def create(self):
-        top_row = [dbc.Col(self.title, className="ml-2")] 
-        # add tooltip in the right corner
-        if self.tooltip:
-            top_row.append(dbc.Col(self.tooltip)) 
 
-        return html.Div(
-            [
-                dbc.Row(top_row, justify="between", style={"height":"10%"}),
-                dbc.Row(self.graph, className="mx-2", style={"height":"85%"})
-            ],
-            className="m-2 border",
-            style={"height":"98%","background-color": "white"}
-        )
 
 '''------------------------------------------------------------------------------------------- 
                                          >> Container <<
@@ -98,9 +125,8 @@ class Container:
         -------------------------------------------------------
         Create the panel where we organise all our cards. This is the core of our dashboard
     """
-    def __init__(self, cards, row_dim, background_color="#fafafa"):
+    def __init__(self, cards, background_color="#fafafa"):
         self.cards = cards
-        self.row_dim = row_dim
         self.background_color = background_color 
 
     def info(self):
@@ -115,23 +141,23 @@ class Container:
             print(f"\t height: {card.height}")
             print(f"\t row's number: {card.row_number}")
 
-    def create_row(self, n, size):
+    def create_row(self, n):
         cards = [card for card in self.cards if card.row_number == n]
         row = dbc.Row(
             children =[],
-            style={"height": size, "background-color": self.background_color},
+            style={ "background-color": self.background_color},
             no_gutters=True,
             className="m-2"
             )
         for card in cards:
-            row.children.append(dbc.Col(card.create(), width=card.width))
+            row.children.append(dbc.Col(card.create_card(), width=card.width))
         return row
 
     def create_dashboard(self, cards, height="auto"):
     	n_row = max([card.row_number for card in cards])
     	container = html.Div([], style={"height":height, "background-color": self.background_color})
     	for row in range(n_row):
-    		container.children.append(self.create_row(row+1, self.row_dim[row]))
+    		container.children.append(self.create_row(row+1))
     	return container
 
 
@@ -148,23 +174,26 @@ if __name__ == '__main__':
     fig.update_layout(margin=dict(l=20, r=20, t=10, b=10))
 
     # create cards
-    card1 = Card("Boos", fig)
-    card1.format(row_number=1,width=6)
+    card1 = Card("testdjnsdsdnj dndhds djdja", fig)
+    card1.format(row_number=1,width=12)
 
-    card2 = Card("attention", fig, tooltip="test")
-    card2.format(row_number=1,width=6)
+    card2 = Card(fig, title = "attention", tooltip="test")
+    card2.format(row_number=2,width=12)
 
-    card3 = Card("Allo", fig, tooltip="aloooo")
-    card3.format(row_number=2, width=6)
 
-    card4 = Card("test", fig, tooltip="test")
-    card4.format(row_number=2,width=6)
+    # card3 = Card("Allo", fig, tooltip="aloooo")
+    # card3.format(row_number=2, width=6)
+
+    # card4 = Card("test", fig, tooltip="test")
+    # card4.format(row_number=2,width=6)
    
-    cards = [card1, card2,card3,card4]
+    # cards = [card1, card2,card3, card4]
+    cards = [card2]
 
-    # container
-    container = Container(cards, row_dim=["48%", "48%"])
-    app.layout = container.create_dashboard(cards, "100vh")
+
+    container = Container(cards)
+    app.layout = container.create_dashboard(cards)
+
     # TODO add footer | ADD Header
 
 
