@@ -10,7 +10,7 @@ import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
 import dash_html_components as html
-from dash.dependencies import Output, Input
+from dash.dependencies import Output, Input, State
 external_stylesheets=[dbc.themes.BOOTSTRAP, "assets/test.css"]
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 server = app.server
@@ -41,14 +41,18 @@ class Card:
 # ------------
 ##  Attributes
 # ------------
-    def __init__(self, graph, title=None, tooltip=None, dash_config={'displayModeBar': False, 'showAxisDragHandles':False, 'responsive':True}):
+    def __init__(self, graph, title=None, tooltip=None, zoom = False,  dash_config={'displayModeBar': False, 'showAxisDragHandles':False, 'responsive':True}):
+        #  graph
+        self.graph = dcc.Graph(figure=graph, config=dash_config, style={"width":"100%"})
+        
         # header
         self.header = []
         self.title = title
         self.tooltip = self.create_tooltip(tooltip) if tooltip else None
+        
+        self.zoom = self.create_modal() if zoom else None 
 
-        #  graph
-        self.graph = dcc.Graph(figure=graph, config=dash_config, style={"width":"100%"})
+        
 
         # format
         self.width = True # default
@@ -61,7 +65,7 @@ class Card:
     # create the header
     # ____________________________________________________________
     def add_title(self):
-        self.header.append(dbc.Col(html.H4(self.title), width="auto", className="border ml-4 my-1", align="center"))
+        self.header.append(dbc.Col(html.H2(self.title, className="border m-0"), width="auto", className="border", align="left"))
 
     def create_tooltip(self, tooltip):
         return [
@@ -69,24 +73,51 @@ class Card:
                 "?", 
                 className="border rounded-circle", 
                 id=f"tooltip-target_{self.title}", 
-                size="sm",
-                style={"float":"right", "background-color": "white", "color":"grey"},
+                style={"border-color":"grey"}, outline=True,
                 ),
             dbc.Tooltip(tooltip, target=f"tooltip-target_{self.title}", placement="left")
         ]
 
     def add_info(self):
-        self.header.append(dbc.Col(self.tooltip, align="center",  width="auto", className="border mr-4")) 
+        self.header.append(dbc.Col(self.tooltip, align="center",  width="auto", className="border")) 
+
+    def create_modal(self):
+        return html.Div([
+            dbc.Button("⇱ ", id=f"{self.title}open-centered", className="border rounded-circle",  outline=True,),
+            dbc.Modal([
+                dbc.ModalHeader(dbc.Row([
+                        dbc.Col(html.H2(self.title), width="auto", className="border", align="center"), 
+                        dbc.Col(dbc.Button("x", id=f"{self.title}close-centered", outline=True, className="border rounded-circle ml-auto"))], 
+                    justify="end")),
+                dbc.ModalBody(self.graph),
+            ],
+            id=f"{self.title}modal-centered",
+            centered=True),
+        ]) 
+    
+    def zoom_interact(self):
+        @app.callback(
+            Output(f"{self.title}modal-centered", "is_open"),
+            [Input(f"{self.title}open-centered", "n_clicks"), Input(f"{self.title}close-centered", "n_clicks")],
+            [State(f"{self.title}modal-centered", "is_open")])
+        
+        def toggle_modal(n1, n2, is_open):
+            if n1 or n2:
+                return not is_open
+            return is_open
 
     def add_zoom(self):
-        # self.header.append()
+        self.header.append(dbc.Col(self.zoom, align="center", width="auto", className="border"))
     
     def create_header(self):
         if self.title: 
             self.add_title()
         if self.tooltip:
             self.add_info()
-        return dbc.Row(self.header, justify="between")
+        if self.zoom:
+            self.add_zoom()
+            self.zoom_interact()
+        return dbc.Row(self.header, className="border mx-4 my-2", align="center")
 
     # create the card 
     # ____________________________________________________________
@@ -94,9 +125,10 @@ class Card:
         return html.Div(
             [
                 self.create_header(),
-                dbc.Row(self.graph, className="border m-2")
+                html.Hr(className="m-0"),
+                dbc.Row(self.graph, className="border mx-4 my-2")
             ],
-            className="border m-2",
+            className="border m-3",
             style={"background-color": "white"}
         )
 
@@ -147,7 +179,7 @@ class Container:
             children =[],
             style={ "background-color": self.background_color},
             no_gutters=True,
-            className="m-2"
+            # className="border"
             )
         for card in cards:
             row.children.append(dbc.Col(card.create_card(), width=card.width))
@@ -174,12 +206,14 @@ if __name__ == '__main__':
     fig.update_layout(margin=dict(l=20, r=20, t=10, b=10))
 
     # create cards
-    card1 = Card("testdjnsdsdnj dndhds djdja", fig)
-    card1.format(row_number=1,width=12)
+    card1 = Card(fig,title = "Okay", zoom=True, tooltip="try")
+    card1.format(row_number=1,width=5)
 
-    card2 = Card(fig, title = "attention", tooltip="test")
+    card3 = Card(fig,title = "OKO", zoom=True, tooltip="trwe")
+    card3.format(row_number=1,width=7)
+
+    card2 = Card(fig, title = "attention", zoom=True, tooltip="test")
     card2.format(row_number=2,width=12)
-
 
     # card3 = Card("Allo", fig, tooltip="aloooo")
     # card3.format(row_number=2, width=6)
@@ -188,11 +222,21 @@ if __name__ == '__main__':
     # card4.format(row_number=2,width=6)
    
     # cards = [card1, card2,card3, card4]
-    cards = [card2]
+    cards = [card2, card1, card3]
 
 
     container = Container(cards)
     app.layout = container.create_dashboard(cards)
+
+    # @app.callback(
+    #     Output("modal-centered", "is_open"),
+    #     [Input("open-centered", "n_clicks"), Input("close-centered", "n_clicks")],
+    #     [State("modal-centered", "is_open")])
+        
+    # def toggle_modal(n1, n2, is_open):
+    #     if n1 or n2:
+    #         return not is_open
+    #     return is_open
 
     # TODO add footer | ADD Header
 
