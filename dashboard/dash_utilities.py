@@ -121,7 +121,7 @@ class Card:
 
     # create the card 
     # ____________________________________________________________
-    def create_card(self):
+    def create(self):
         return html.Div(
             [
                 self.create_header(),
@@ -138,7 +138,44 @@ class Card:
         self.row_number = row_number
         self.width = width
 
+'''------------------------------------------------------------------------------------------- 
+                                       >> HEADER <<
+   ------------------------------------------------------------------------------------------- 
+'''
 
+class Header():
+    """
+        >> ATTRIBUTES <<
+        ---------------------------------------------------------------------------------------------
+        	* title: title of the dashboard
+            * elm:  elements inside the side bars
+            * header: header 
+
+        >> OUTPUT <<
+        -------------------------------------------------------
+        Create the header of the dash
+    """
+    def __init__(self, title, elm=False):
+        self.title = title
+        self.elm = elm
+        self.header = self.create()
+    
+    # create header
+    def main(self):
+        return dbc.Row(dbc.Col(html.H1(self.title, className="ml-3 my-2", style={ "color":"white"}), style={"background-color":"#0077b6"}))
+    
+    # create a sub header
+    def sub(self): 
+        sub = dbc.Row([], style={"background-color":"white"}, className="border-bottom")
+        for filter in self.elm:
+            sub.children.append(dbc.Col(filter, width=2, className="my-2 ml-3"))
+        return sub
+
+    def create(self):
+        header = html.Div([self.main()])
+        if self.elm:
+            header.children.append(self.sub())
+        return header
 
 '''------------------------------------------------------------------------------------------- 
                                          >> Container <<
@@ -146,7 +183,7 @@ class Card:
 '''         
 class Container:
     """
-        >> INPUTS <<
+        >> ATTRIBUTES <<
         ---------------------------------------------------------------------------------------------
         	* cards: a list of card component difine with there row's location (num_row) and there width (width)
         	* row_dim: list of string which describe the height of each row
@@ -157,8 +194,9 @@ class Container:
         -------------------------------------------------------
         Create the panel where we organise all our cards. This is the core of our dashboard
     """
-    def __init__(self, cards, background_color="#fafafa"):
+    def __init__(self, header, cards, background_color="#fafafa"):
         self.cards = cards
+        self.header = header
         self.background_color = background_color 
 
     def info(self):
@@ -173,7 +211,7 @@ class Container:
             print(f"\t height: {card.height}")
             print(f"\t row's number: {card.row_number}")
 
-    def create_row(self, n):
+    def row(self, n):
         cards = [card for card in self.cards if card.row_number == n]
         row = dbc.Row(
             children =[],
@@ -182,16 +220,15 @@ class Container:
             # className="border"
             )
         for card in cards:
-            row.children.append(dbc.Col(card.create_card(), width=card.width))
+            row.children.append(dbc.Col(card.create(), width=card.width))
         return row
 
-    def create_dashboard(self, cards, height="auto"):
-    	n_row = max([card.row_number for card in cards])
-    	container = html.Div([], style={"height":height, "background-color": self.background_color})
+    def create(self, height="auto"):
+    	n_row = max([card.row_number for card in self.cards])
+    	container = html.Div([self.header], style={"height":height, "background-color": self.background_color})
     	for row in range(n_row):
-    		container.children.append(self.create_row(row+1))
+    		container.children.append(self.row(row+1))
     	return container
-
 
 
 '''------------------------------------------------------------------------------------------- 
@@ -215,30 +252,20 @@ if __name__ == '__main__':
     card2 = Card(fig, title = "attention", zoom=True, tooltip="test")
     card2.format(row_number=2,width=12)
 
-    # card3 = Card("Allo", fig, tooltip="aloooo")
-    # card3.format(row_number=2, width=6)
-
-    # card4 = Card("test", fig, tooltip="test")
-    # card4.format(row_number=2,width=6)
-   
-    # cards = [card1, card2,card3, card4]
     cards = [card2, card1, card3]
 
+    # header
+    # cheader elements
+    dropdown = dcc.Dropdown(
+    options=[{'label': 'New York City', 'value': 'NYC'}, {'label': 'Montréal', 'value': 'MTL'},  {'label': 'San Francisco', 'value': 'SF'}],
+    value='MTL', clearable=False) 
+    slider =  dcc.Slider(id='my-slider', min=0, max=20, step=0.5, value=10),
+    header = Header("Crise Covid", elm=[dropdown, dropdown, dropdown])
 
-    container = Container(cards)
-    app.layout = container.create_dashboard(cards)
+    # dashboard
+    container = Container(header.header, cards)
+    app.layout = container.create()
 
-    # @app.callback(
-    #     Output("modal-centered", "is_open"),
-    #     [Input("open-centered", "n_clicks"), Input("close-centered", "n_clicks")],
-    #     [State("modal-centered", "is_open")])
-        
-    # def toggle_modal(n1, n2, is_open):
-    #     if n1 or n2:
-    #         return not is_open
-    #     return is_open
-
-    # TODO add footer | ADD Header
 
 
 
