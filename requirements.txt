@@ -52,7 +52,7 @@ pandas==1.1.0
 pandocfilters==1.4.2
 parso==0.7.0
 pickleshare==0.7.5
-pipenv==2020.6.2
+pipenv==2022.1.8
 plotly==4.9.0
 ply==3.11
 prometheus-client==0.8.0
